@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#F0F6FA] text-[#3a4a5a] font-sans;
+    background: linear-gradient(180deg, #EEF5F9 0%, #E4EEF5 50%, #F0F6FA 100%);
+    min-height: 100vh;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif text-[#001D39];
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #EEF5F9; 
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #99CDD8; 
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #49769F; 
+  }
+}
+
+@layer utilities {
+  .text-ocean {
+    color: #0A4174;
+  }
+  .bg-ocean {
+    background-color: #0A4174;
+  }
+  .border-ocean {
+    border-color: #0A4174;
+  }
+  .hover-text-ocean:hover {
+    color: #001D39;
+  }
+  .hover-bg-ocean:hover {
+    background-color: #001D39;
+  }
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+  .glass-strong {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+  .gradient-text {
+    background: linear-gradient(135deg, #0A4174, #49769F);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+.timeline-step.active .timeline-marker {
+  background-color: #0A4174;
+  border-color: #0A4174;
+}
+
+.timeline-step.completed .timeline-line {
+  background-color: #0A4174;
+}
+
+.chart-bar:hover {
+  opacity: 0.8;
+}
