@@ -15,9 +15,10 @@
 export const STATIC_IMAGES = {
   // Brand & Logo
   logo: {
-    symbol: 'https://images.unsplash.com/photo-1621503923015-89bd2399d868?auto=format&fit=crop&w=120&q=80',
-    emblem: 'https://images.unsplash.com/photo-1610375461246-83df859d849d?auto=format&fit=crop&w=200&q=80',
-    sealGold: 'https://images.unsplash.com/photo-1599839575945-a9e5af0c3fa5?auto=format&fit=crop&w=300&q=80',
+    main: 'https://res.cloudinary.com/elitehomes/image/upload/v1788148596/nedeqh3gfpeilb1sgiv7.png',
+    symbol: 'https://res.cloudinary.com/elitehomes/image/upload/v1788148596/nedeqh3gfpeilb1sgiv7.png',
+    emblem: 'https://res.cloudinary.com/elitehomes/image/upload/v1788148596/nedeqh3gfpeilb1sgiv7.png',
+    sealGold: 'https://res.cloudinary.com/elitehomes/image/upload/v1788148596/nedeqh3gfpeilb1sgiv7.png',
   },
 
   // Hero & Homepage Sections
@@ -29,10 +30,10 @@ export const STATIC_IMAGES = {
 
   // About Us Page & Storytelling
   about: {
-    heroBanner: 'https://images.unsplash.com/photo-1579783902614-a3fb3927b675?auto=format&fit=crop&w=1200&q=80',
+    heroBanner: 'https://res.cloudinary.com/elitehomes/image/upload/v1788457850/vo9fafa9hjentullsuir.png',
     curatorAtWork: 'https://images.unsplash.com/photo-1582555172866-f73bb12a2ab3?auto=format&fit=crop&w=800&q=80',
     magnifierAndCoins: 'https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?auto=format&fit=crop&w=800&q=80',
-    ancientTradeMap: 'https://images.unsplash.com/photo-1524654458049-e36be0721fa2?auto=format&fit=crop&w=800&q=80',
+    ancientTradeMap: 'https://res.cloudinary.com/elitehomes/image/upload/v1788458112/jlta9e8mb1mngs5vegfo.png',
     numismaticVault: 'https://images.unsplash.com/photo-1563986768609-322da13575f3?auto=format&fit=crop&w=800&q=80',
     preservationTray: 'https://images.unsplash.com/photo-1768429670472-c37090eb7e37?q=80&w=794&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
   },

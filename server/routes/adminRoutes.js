@@ -43,7 +43,9 @@ const {
   updateOrderStatus, 
   cancelOrder, 
   processRefund, 
-  getOrderStats 
+  getOrderStats,
+  getRefundableOrders,
+  getRefundStats
 } = require('../controllers/orderController');
 
 router.use(protect, admin);
@@ -100,6 +102,11 @@ router.get('/orders/:id', getOrderById);
 router.put('/orders/:id/status', updateOrderStatus);
 router.put('/orders/:id/cancel', cancelOrder);
 router.put('/orders/:id/refund', processRefund);
+
+// Admin Dedicated Refund Routes
+router.get('/refunds/stats', getRefundStats);
+router.get('/refunds', getRefundableOrders);
+
 router.get('/payments', getPaymentHistory);
 
 module.exports = router;

@@ -9,6 +9,7 @@ export const useWishlist = () => useContext(WishlistContext);
 
 export const WishlistProvider = ({ children }) => {
   const [wishlistItems, setWishlistItems] = useState([]);
+  const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -21,10 +22,14 @@ export const WishlistProvider = ({ children }) => {
 
   const fetchWishlist = async () => {
     try {
+      setLoading(true);
       const data = await wishlistService.getWishlist();
       setWishlistItems(data.coins || data.items || []);
     } catch (error) {
       console.error('Failed to fetch wishlist', error);
+      setWishlistItems([]);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -51,7 +56,9 @@ export const WishlistProvider = ({ children }) => {
   };
 
   const value = {
-    wishlistItems,
+    wishlist: wishlistItems,      // alias used by Wishlist.jsx
+    wishlistItems,                // kept for backward compatibility
+    loading,
     toggleWishlist,
     isInWishlist,
     fetchWishlist,

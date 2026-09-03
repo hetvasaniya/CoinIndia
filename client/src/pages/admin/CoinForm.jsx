@@ -3,12 +3,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import adminService from '../../services/adminService';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
+import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
 import { ERA_OPTIONS, CONDITION_COLORS } from '../../utils/constants';
 
 const CoinForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isDark } = useTheme();
   const isEdit = !!id;
 
   const [loading, setLoading] = useState(false);
@@ -164,190 +166,134 @@ const CoinForm = () => {
   };
 
   if (dataLoading) {
-    return <div className="p-12 text-center text-gray-500 font-serif text-lg">Loading artifact specifications...</div>;
+    return <div className={`p-12 text-center font-serif text-lg ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Loading artifact specifications...</div>;
   }
+
+  const cardBg = isDark ? 'bg-dark-800 border-dark-700' : 'bg-white border-gray-200';
+  const labelClass = `block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`;
+  const selectClass = `w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500 sm:text-sm ${
+    isDark ? 'bg-dark-700 border-dark-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+  }`;
+  const textareaClass = `w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500 sm:text-sm ${
+    isDark ? 'bg-dark-700 border-dark-600 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+  }`;
 
   return (
     <div className="max-w-5xl mx-auto pb-12">
       <div className="mb-8">
         <button 
           onClick={() => navigate(-1)} 
-          className="text-sm text-gray-500 hover:text-[#B8860B] mb-2 flex items-center gap-1 transition-colors"
+          className="text-sm text-gold-500 hover:text-gold-400 mb-2 flex items-center gap-1 transition-colors"
         >
           &larr; Back to Catalog
         </button>
-        <h1 className="text-3xl font-serif text-[#1a1a1a]">
+        <h1 className={`text-3xl font-serif ${isDark ? 'text-white' : 'text-gray-900'}`}>
           {isEdit ? 'Edit Coin Artifact' : 'Register New Coin Artifact'}
         </h1>
-        <p className="text-gray-500 mt-1 text-sm">
+        <p className={`mt-1 text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
           Fill in the specifications below. Helpful example placeholders are provided in every field.
         </p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
-        {/* Identification Section */}
-        <div className="bg-white p-6 border border-gray-200 rounded-sm shadow-sm">
-          <h2 className="text-xl font-serif text-[#1a1a1a] mb-6 border-b pb-2 flex items-center justify-between">
+        {/* Identification */}
+        <div className={`p-6 border rounded-xl shadow-sm ${cardBg}`}>
+          <h2 className={`text-xl font-serif mb-6 border-b pb-3 flex items-center justify-between ${
+            isDark ? 'text-white border-dark-700' : 'text-gray-900 border-gray-200'
+          }`}>
             <span>1. Identification & Classification</span>
-            <span className="text-xs font-sans text-gray-400 font-normal">Required fields marked with *</span>
+            <span className={`text-xs font-sans font-normal ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Required fields marked with *</span>
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="md:col-span-2">
-              <Input 
-                label="Artifact Name" 
-                name="name" 
-                required 
-                placeholder="e.g., 1862 Queen Victoria One Rupee (Calcutta Mint, Silver)" 
-                value={formData.name} 
-                onChange={handleInputChange} 
-              />
+              <Input label="Artifact Name" name="name" required placeholder="e.g., 1862 Queen Victoria One Rupee (Calcutta Mint, Silver)" value={formData.name} onChange={handleInputChange} />
             </div>
-            
-            <Input 
-              label="Year of Issue" 
-              name="year" 
-              required 
-              placeholder="e.g., 1862 or 1556 or 320 BCE" 
-              value={formData.year} 
-              onChange={handleInputChange} 
-            />
-            
-            <Input 
-              label="SKU / Stock Identifier" 
-              name="sku" 
-              placeholder="e.g., COIN-IND-1862-001" 
-              value={formData.sku} 
-              onChange={handleInputChange} 
-            />
+            <Input label="Year of Issue" name="year" required placeholder="e.g., 1862 or 1556 or 320 BCE" value={formData.year} onChange={handleInputChange} />
+            <Input label="SKU / Stock Identifier" name="sku" placeholder="e.g., COIN-IND-1862-001" value={formData.sku} onChange={handleInputChange} />
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Category <span className="text-red-500">*</span>
-              </label>
-              <select 
-                name="category" 
-                required 
-                value={formData.category} 
-                onChange={handleInputChange} 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#B8860B] focus:border-[#B8860B] sm:text-sm bg-white"
-              >
+              <label className={labelClass}>Category <span className="text-red-500">*</span></label>
+              <select name="category" required value={formData.category} onChange={handleInputChange} className={selectClass}>
                 <option value="">-- Select Category (e.g., British India, Mughal) --</option>
                 {categories.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
               </select>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Historical Era <span className="text-red-500">*</span>
-              </label>
-              <select 
-                name="era" 
-                required 
-                value={formData.era} 
-                onChange={handleInputChange} 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#B8860B] focus:border-[#B8860B] sm:text-sm bg-white"
-              >
+              <label className={labelClass}>Historical Era <span className="text-red-500">*</span></label>
+              <select name="era" required value={formData.era} onChange={handleInputChange} className={selectClass}>
                 <option value="">-- Select Era (e.g., British India, Mughal) --</option>
                 {ERA_OPTIONS.map(e => <option key={e} value={e}>{e}</option>)}
               </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Country of Origin <span className="text-red-500">*</span>
-              </label>
-              <select 
-                name="country" 
-                required 
-                value={formData.country} 
-                onChange={handleInputChange} 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#B8860B] focus:border-[#B8860B] sm:text-sm bg-white"
-              >
+              <label className={labelClass}>Country of Origin <span className="text-red-500">*</span></label>
+              <select name="country" required value={formData.country} onChange={handleInputChange} className={selectClass}>
                 <option value="">-- Select Country (e.g., India, United Kingdom) --</option>
                 {countries.map(c => <option key={c._id} value={c._id}>{c.flag ? `${c.flag} ` : ''}{c.name}</option>)}
               </select>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Numismatic Condition Grade <span className="text-red-500">*</span>
-              </label>
-              <select 
-                name="condition" 
-                required 
-                value={formData.condition} 
-                onChange={handleInputChange} 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#B8860B] focus:border-[#B8860B] sm:text-sm bg-white"
-              >
+              <label className={labelClass}>Numismatic Condition Grade <span className="text-red-500">*</span></label>
+              <select name="condition" required value={formData.condition} onChange={handleInputChange} className={selectClass}>
                 <option value="">-- Select Grade (e.g., UNC, XF, VF) --</option>
                 {Object.keys(CONDITION_COLORS).map(c => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
 
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Historical Significance & Narrative
-              </label>
-              <textarea 
-                name="description" 
-                rows="4" 
-                placeholder="Describe the historical context, issuing dynasty or ruler, commemorative milestones, strike quality, and numismatic pedigree..." 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#B8860B] focus:border-[#B8860B] sm:text-sm" 
-                value={formData.description} 
-                onChange={handleInputChange}
-              ></textarea>
+              <label className={labelClass}>Historical Significance & Narrative</label>
+              <textarea name="description" rows="4" placeholder="Describe the historical context, issuing dynasty or ruler, commemorative milestones, strike quality..." className={textareaClass} value={formData.description} onChange={handleInputChange}></textarea>
             </div>
           </div>
         </div>
 
-        {/* Imagery Section */}
-        <div className="bg-white p-6 border border-gray-200 rounded-sm shadow-sm">
-          <h2 className="text-xl font-serif text-[#1a1a1a] mb-6 border-b pb-2">2. Artifact Imagery (Obverse & Reverse)</h2>
+        {/* Images */}
+        <div className={`p-6 border rounded-xl shadow-sm ${cardBg}`}>
+          <h2 className={`text-xl font-serif mb-6 border-b pb-3 ${isDark ? 'text-white border-dark-700' : 'text-gray-900 border-gray-200'}`}>
+            2. Artifact Imagery (Obverse & Reverse)
+          </h2>
           
           {existingImages.length > 0 && (
             <div className="mb-6">
-              <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold mb-3">Existing Images</p>
+              <p className="text-xs uppercase tracking-wider text-gold-500 font-semibold mb-3">Existing Images</p>
               <div className="flex flex-wrap gap-4">
                 {existingImages.map((img, i) => (
-                  <div key={i} className="w-24 h-24 border border-gray-200 p-1 bg-[#FAFAF7] rounded flex items-center justify-center">
-                    <img 
-                      src={typeof img === 'string' ? img : img.url} 
-                      alt={`Artifact view ${i + 1}`} 
-                      className="max-h-full max-w-full object-contain" 
-                    />
+                  <div key={i} className={`w-24 h-24 border p-1 rounded-lg flex items-center justify-center ${isDark ? 'bg-dark-700 border-dark-600' : 'bg-gray-50 border-gray-200'}`}>
+                    <img src={typeof img === 'string' ? img : img.url} alt={`Artifact view ${i + 1}`} className="max-h-full max-w-full object-contain" />
                   </div>
                 ))}
               </div>
             </div>
           )}
 
-          <div className="border-2 border-dashed border-gray-300 rounded-md p-10 text-center bg-[#FAFAF7] hover:border-[#B8860B] transition-colors">
+          <div className={`border-2 border-dashed rounded-lg p-10 text-center transition-colors ${
+            isDark ? 'border-dark-600 bg-dark-700/50 hover:border-gold-500' : 'border-gray-300 bg-[#FAFAF7] hover:border-gold-500'
+          }`}>
             <div className="space-y-2">
-              <svg className="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+              <svg className={`mx-auto h-12 w-12 ${isDark ? 'text-gray-600' : 'text-gray-400'}`} stroke="currentColor" fill="none" viewBox="0 0 48 48">
                 <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
-              <div className="flex text-sm text-gray-600 justify-center">
-                <label className="relative cursor-pointer bg-white rounded-md font-medium text-[#B8860B] hover:text-[#8B6914] focus-within:outline-none px-2 py-0.5 border border-gray-200">
+              <div className={`flex text-sm justify-center ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                <label className={`relative cursor-pointer rounded-md font-medium text-gold-500 hover:text-gold-400 focus-within:outline-none px-2 py-0.5 border ${
+                  isDark ? 'bg-dark-700 border-dark-600' : 'bg-white border-gray-200'
+                }`}>
                   <span>Choose coin image files</span>
-                  <input 
-                    type="file" 
-                    multiple 
-                    className="sr-only" 
-                    onChange={(e) => setImageFiles(e.target.files)} 
-                    accept="image/*" 
-                  />
+                  <input type="file" multiple className="sr-only" onChange={(e) => setImageFiles(e.target.files)} accept="image/*" />
                 </label>
                 <p className="pl-2 pt-0.5">or drag and drop coin photos</p>
               </div>
-              <p className="text-xs text-gray-400">High-resolution PNG, JPG, WEBP up to 5MB each (Front & Back)</p>
+              <p className={`text-xs ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>High-resolution PNG, JPG, WEBP up to 5MB each (Front & Back)</p>
             </div>
             
             {imagePreviews.length > 0 && (
-              <div className="mt-6 border-t pt-4">
-                <p className="text-sm font-medium text-emerald-700 mb-3">{imagePreviews.length} new photo(s) selected:</p>
+              <div className={`mt-6 border-t pt-4 ${isDark ? 'border-dark-600' : 'border-gray-200'}`}>
+                <p className="text-sm font-medium text-emerald-500 mb-3">{imagePreviews.length} new photo(s) selected:</p>
                 <div className="flex flex-wrap justify-center gap-3">
                   {imagePreviews.map((url, i) => (
-                    <div key={i} className="w-20 h-20 border border-emerald-300 rounded p-1 bg-white shadow-sm">
+                    <div key={i} className={`w-20 h-20 border rounded-lg p-1 shadow-sm ${isDark ? 'bg-dark-700 border-dark-600' : 'bg-white border-gray-200'}`}>
                       <img src={url} alt={`Upload preview ${i+1}`} className="w-full h-full object-contain" />
                     </div>
                   ))}
@@ -357,56 +303,20 @@ const CoinForm = () => {
           </div>
         </div>
 
-        {/* Specifications Section */}
-        <div className="bg-white p-6 border border-gray-200 rounded-sm shadow-sm">
-          <h2 className="text-xl font-serif text-[#1a1a1a] mb-6 border-b pb-2">3. Technical Numismatic Specifications</h2>
+        {/* Specs */}
+        <div className={`p-6 border rounded-xl shadow-sm ${cardBg}`}>
+          <h2 className={`text-xl font-serif mb-6 border-b pb-3 ${isDark ? 'text-white border-dark-700' : 'text-gray-900 border-gray-200'}`}>
+            3. Technical Numismatic Specifications
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Input 
-              label="Metal / Composition" 
-              name="material" 
-              placeholder="e.g., Silver (.917), Gold (.999), Copper" 
-              value={formData.material} 
-              onChange={handleInputChange} 
-            />
-            
-            <Input 
-              label="Weight (in grams)" 
-              name="weight" 
-              type="number" 
-              step="0.01" 
-              placeholder="e.g., 11.66" 
-              value={formData.weight} 
-              onChange={handleInputChange} 
-            />
-            
-            <Input 
-              label="Diameter (in mm)" 
-              name="diameter" 
-              type="number" 
-              step="0.1" 
-              placeholder="e.g., 30.8" 
-              value={formData.diameter} 
-              onChange={handleInputChange} 
-            />
-            
-            <Input 
-              label="Face Denomination" 
-              name="denomination" 
-              placeholder="e.g., 1 Rupee, 1 Mohur, 8 Annas" 
-              value={formData.denomination} 
-              onChange={handleInputChange} 
-            />
+            <Input label="Metal / Composition" name="material" placeholder="e.g., Silver (.917), Gold (.999)" value={formData.material} onChange={handleInputChange} />
+            <Input label="Weight (g)" name="weight" type="number" step="0.01" placeholder="e.g., 11.66" value={formData.weight} onChange={handleInputChange} />
+            <Input label="Diameter (mm)" name="diameter" type="number" step="0.1" placeholder="e.g., 30.8" value={formData.diameter} onChange={handleInputChange} />
+            <Input label="Face Denomination" name="denomination" placeholder="e.g., 1 Rupee, 1 Mohur" value={formData.denomination} onChange={handleInputChange} />
             
             <div className="md:col-span-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Mint of Origin / Mint Mark Location
-              </label>
-              <select 
-                name="mint" 
-                value={formData.mint} 
-                onChange={handleInputChange} 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#B8860B] focus:border-[#B8860B] sm:text-sm bg-white"
-              >
+              <label className={labelClass}>Mint of Origin / Mint Mark Location</label>
+              <select name="mint" value={formData.mint} onChange={handleInputChange} className={selectClass}>
                 <option value="">-- Select Mint (e.g., Calcutta, Bombay, Lahore, Madras) --</option>
                 {mints.map(m => <option key={m._id} value={m._id}>{m.name} {m.mintMark ? `(${m.mintMark})` : ''}</option>)}
               </select>
@@ -415,75 +325,41 @@ const CoinForm = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Obverse (Front) Design</label>
-              <textarea 
-                name="obverseDesign" 
-                rows="3" 
-                placeholder="Describe the front engraving: portrait of monarch/emperor, head facing left/right, royal titles, peripheral rim beading..." 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#B8860B] focus:border-[#B8860B] sm:text-sm" 
-                value={formData.obverseDesign} 
-                onChange={handleInputChange}
-              ></textarea>
+              <label className={labelClass}>Obverse (Front) Design</label>
+              <textarea name="obverseDesign" rows="3" placeholder="Describe front engraving..." className={textareaClass} value={formData.obverseDesign} onChange={handleInputChange}></textarea>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Reverse (Back) Design</label>
-              <textarea 
-                name="reverseDesign" 
-                rows="3" 
-                placeholder="Describe the back engraving: denomination wording, floral wreath pattern, issue year, mint mark symbol..." 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#B8860B] focus:border-[#B8860B] sm:text-sm" 
-                value={formData.reverseDesign} 
-                onChange={handleInputChange}
-              ></textarea>
+              <label className={labelClass}>Reverse (Back) Design</label>
+              <textarea name="reverseDesign" rows="3" placeholder="Describe back engraving..." className={textareaClass} value={formData.reverseDesign} onChange={handleInputChange}></textarea>
             </div>
           </div>
         </div>
 
-        {/* Pricing & Inventory */}
-        <div className="bg-white p-6 border border-gray-200 rounded-sm shadow-sm">
-          <h2 className="text-xl font-serif text-[#1a1a1a] mb-6 border-b pb-2">4. Valuation & Inventory Stock</h2>
+        {/* Valuation & Stock */}
+        <div className={`p-6 border rounded-xl shadow-sm ${cardBg}`}>
+          <h2 className={`text-xl font-serif mb-6 border-b pb-3 ${isDark ? 'text-white border-dark-700' : 'text-gray-900 border-gray-200'}`}>
+            4. Valuation & Inventory Stock
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Input 
-              label="Selling Price (₹ INR)" 
-              name="price" 
-              type="number" 
-              required 
-              placeholder="e.g., 12500" 
-              value={formData.price} 
-              onChange={handleInputChange} 
-            />
+            <Input label="Selling Price (₹ INR)" name="price" type="number" required placeholder="e.g., 12500" value={formData.price} onChange={handleInputChange} />
+            <Input label="Quantity Available in Stock" name="quantity" type="number" required placeholder="e.g., 1 or 5" value={formData.quantity} onChange={handleInputChange} />
             
-            <Input 
-              label="Quantity Available in Stock" 
-              name="quantity" 
-              type="number" 
-              required 
-              placeholder="e.g., 1 or 5" 
-              value={formData.quantity} 
-              onChange={handleInputChange} 
-            />
-            
-            <div className="md:col-span-2 flex items-center mt-2 p-3 bg-[#FAFAF7] rounded border border-gray-200">
-              <input 
-                type="checkbox" 
-                id="isFeatured" 
-                name="isFeatured" 
-                checked={formData.isFeatured} 
-                onChange={handleInputChange} 
-                className="h-4 w-4 text-[#B8860B] focus:ring-[#B8860B] border-gray-300 rounded cursor-pointer" 
-              />
-              <label htmlFor="isFeatured" className="ml-3 block text-sm font-medium text-gray-900 cursor-pointer">
-                Feature this artifact in the Homepage & Curated Highlights
+            <div className={`md:col-span-2 flex items-center mt-2 p-3 rounded-lg border ${
+              isDark ? 'bg-dark-700/50 border-dark-600' : 'bg-[#FAFAF7] border-gray-200'
+            }`}>
+              <input type="checkbox" id="isFeatured" name="isFeatured" checked={formData.isFeatured} onChange={handleInputChange} className="h-4 w-4 text-gold-500 focus:ring-gold-500 border-gray-300 rounded accent-gold-500 cursor-pointer" />
+              <label htmlFor="isFeatured" className={`ml-3 block text-sm font-medium cursor-pointer ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                Feature this artifact in Homepage & Curated Highlights
               </label>
             </div>
           </div>
         </div>
 
-        <div className="flex justify-end space-x-4 pt-4 border-t">
+        <div className={`flex justify-end space-x-4 pt-4 border-t ${isDark ? 'border-dark-700' : 'border-gray-200'}`}>
           <Button variant="outline" type="button" onClick={() => navigate('/admin/coins')}>
             Cancel
           </Button>
-          <Button type="submit" isLoading={loading}>
+          <Button type="submit" isLoading={loading} className="shadow-gold">
             {isEdit ? 'Save Changes' : 'Register Artefact'}
           </Button>
         </div>

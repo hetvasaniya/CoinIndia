@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import adminService from '../../services/adminService';
 import { formatPrice } from '../../utils/helpers';
+import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
 import { FiCheck } from 'react-icons/fi';
 
@@ -9,6 +10,7 @@ const Inventory = () => {
   const [loading, setLoading] = useState(true);
   const [editQty, setEditQty] = useState({});
   const [search, setSearch] = useState('');
+  const { isDark } = useTheme();
 
   useEffect(() => {
     fetchInventory();
@@ -54,59 +56,63 @@ const Inventory = () => {
     (item.sku && item.sku.toLowerCase().includes(search.toLowerCase()))
   );
 
-  if (loading) return <div className="p-8 text-gray-500">Loading inventory records...</div>;
+  if (loading) return <div className={`p-8 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Loading inventory records...</div>;
+
+  const cardBg = isDark ? 'bg-dark-800 border-dark-700' : 'bg-white border-gray-200';
 
   return (
     <div>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h1 className="text-2xl font-serif text-[#1a1a1a]">Inventory Management</h1>
+        <h1 className={`text-2xl font-serif ${isDark ? 'text-white' : 'text-gray-900'}`}>Inventory Management</h1>
         <div className="w-full sm:w-72">
           <input
             type="text"
             placeholder="Search by artifact name or SKU..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-sm focus:outline-none focus:ring-1 focus:ring-[#B8860B] focus:border-[#B8860B] text-sm bg-white"
+            className={`w-full px-3 py-2 border rounded-lg text-sm transition-all focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500 ${
+              isDark ? 'bg-dark-700 border-dark-600 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+            }`}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
       </div>
       
-      <div className="bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden">
+      <div className={`border rounded-xl shadow-sm overflow-hidden ${cardBg}`}>
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-[#FAFAF7]">
+          <table className={`min-w-full divide-y ${isDark ? 'divide-dark-700' : 'divide-gray-200'}`}>
+            <thead className={isDark ? 'bg-dark-700/50' : 'bg-gray-50'}>
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Artefact</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock Qty</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Quick Update</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>SKU</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Artefact</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Price</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Status</th>
+                <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Stock Qty</th>
+                <th className={`px-6 py-3 text-right text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Quick Update</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className={`divide-y ${isDark ? 'divide-dark-700' : 'divide-gray-200'}`}>
               {filteredInventory.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-8 text-center text-sm text-gray-500">
+                  <td colSpan="6" className={`px-6 py-8 text-center text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
                     No matching inventory items found.
                   </td>
                 </tr>
               ) : (
                 filteredInventory.map((item) => (
-                  <tr key={item._id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.sku || 'N/A'}</td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">{item.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatPrice(item.price || item.sellingPrice)}</td>
+                  <tr key={item._id} className={`transition-colors ${isDark ? 'hover:bg-dark-700/50' : 'hover:bg-gray-50'}`}>
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{item.sku || 'N/A'}</td>
+                    <td className={`px-6 py-4 text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{item.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gold-500">{formatPrice(item.price || item.sellingPrice)}</td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       {item.quantity > 5 ? (
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">In Stock</span>
+                        <span className="px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">In Stock</span>
                       ) : item.quantity > 0 ? (
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">Low Stock</span>
+                        <span className="px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">Low Stock</span>
                       ) : (
-                        <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">Out of Stock</span>
+                        <span className="px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-500/10 text-red-500 border border-red-500/20">Out of Stock</span>
                       )}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
                       {item.quantity}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
@@ -115,14 +121,16 @@ const Inventory = () => {
                           type="number" 
                           min="0"
                           placeholder="Qty"
-                          className="w-20 px-2 py-1 text-sm border border-gray-300 rounded-l focus:outline-none focus:ring-1 focus:ring-[#B8860B]"
+                          className={`w-20 px-2 py-1 text-sm border rounded-l-lg focus:outline-none focus:ring-1 focus:ring-gold-500 ${
+                            isDark ? 'bg-dark-700 border-dark-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+                          }`}
                           value={editQty[item._id] !== undefined ? editQty[item._id] : item.quantity}
                           onChange={(e) => handleQtyChange(item._id, e.target.value)}
                         />
                         <button 
                           onClick={() => updateQuantity(item._id)}
                           disabled={editQty[item._id] === undefined || editQty[item._id] == item.quantity}
-                          className="bg-[#B8860B] text-white px-3 py-1 border border-[#B8860B] rounded-r disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                          className="bg-gold-500 text-white px-3 py-1 border border-gold-500 rounded-r-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gold-600 transition-colors"
                         >
                           <FiCheck />
                         </button>

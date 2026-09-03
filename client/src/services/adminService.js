@@ -32,6 +32,8 @@ const adminService = {
     api.put(`/admin/orders/${id}/status`, typeof payload === 'string' ? { status: payload } : payload).then((res) => res.data),
   cancelOrder: (id, data) => api.put(`/admin/orders/${id}/cancel`, data).then((res) => res.data),
   processRefund: (id, data) => api.put(`/admin/orders/${id}/refund`, data).then((res) => res.data),
+  getRefunds: (params) => api.get('/admin/refunds', { params }).then((res) => res.data),
+  getRefundStats: () => api.get('/admin/refunds/stats').then((res) => res.data),
   
   getUsers: (params) => api.get('/admin/users', { params }).then((res) => res.data),
   updateUser: (id, data) => api.put(`/admin/users/${id}`, data).then((res) => res.data),

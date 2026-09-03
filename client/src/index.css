@@ -3,14 +3,96 @@
 @tailwind utilities;
 
 @layer base {
+  /* ===== CSS Custom Properties for Theming ===== */
+  :root {
+    /* Transition for theme switch */
+    --theme-transition: background-color 0.4s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    
+    /* Gold tokens */
+    --gold-primary: #B8860B;
+    --gold-light: #D4A843;
+    --gold-dark: #9A7209;
+    --gold-subtle: #E5C46A;
+    --gold-champagne: #FFF9EB;
+  }
+
+  /* Dark Theme (default) */
+  .dark {
+    --bg-primary: #09090b;
+    --bg-secondary: #121215;
+    --bg-tertiary: #18181c;
+    --bg-card: #121215;
+    --bg-card-hover: #1a1a1e;
+    --bg-input: #161619;
+    --bg-elevated: #1d1d22;
+    
+    --text-primary: #f8fafc;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --text-inverse: #09090b;
+    --text-accent: #D4A843;
+    
+    --border-primary: #27272a;
+    --border-secondary: #3f3f46;
+    --border-accent: rgba(184,134,11,0.35);
+    
+    --shadow-card: 0 4px 16px rgba(0,0,0,0.5);
+    --shadow-elevated: 0 10px 40px rgba(0,0,0,0.7);
+    
+    --scrollbar-track: #09090b;
+    --scrollbar-thumb: #27272a;
+    --scrollbar-thumb-hover: #B8860B;
+    
+    color-scheme: dark;
+  }
+
+  /* Light Theme */
+  .light {
+    --bg-primary: #FAF8F5;
+    --bg-secondary: #F5F2EE;
+    --bg-tertiary: #EFECE8;
+    --bg-card: #ffffff;
+    --bg-card-hover: #FEFDFB;
+    --bg-input: #ffffff;
+    --bg-elevated: #ffffff;
+    
+    --text-primary: #1a1a1a;
+    --text-secondary: #4a4a4a;
+    --text-muted: #888888;
+    --text-inverse: #f5f5f5;
+    --text-accent: #B8860B;
+    
+    --border-primary: #e5e0d8;
+    --border-secondary: #d4cfc7;
+    --border-accent: rgba(184,134,11,0.25);
+    
+    --shadow-card: 0 2px 12px rgba(0,0,0,0.06);
+    --shadow-elevated: 0 8px 32px rgba(0,0,0,0.08);
+    
+    --scrollbar-track: #F5F2EE;
+    --scrollbar-thumb: #d4cfc7;
+    --scrollbar-thumb-hover: #B8860B;
+    
+    color-scheme: light;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-[#F0F6FA] text-[#3a4a5a] font-sans;
-    background: linear-gradient(180deg, #EEF5F9 0%, #E4EEF5 50%, #F0F6FA 100%);
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Inter', system-ui, sans-serif;
     min-height: 100vh;
+    transition: var(--theme-transition);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply font-serif text-[#001D39];
+    font-family: 'Playfair Display', Georgia, serif;
+    color: var(--text-primary);
   }
 
   /* Custom scrollbar */
@@ -19,60 +101,176 @@
     height: 8px;
   }
   ::-webkit-scrollbar-track {
-    background: #EEF5F9; 
+    background: var(--scrollbar-track);
   }
   ::-webkit-scrollbar-thumb {
-    background: #99CDD8; 
+    background: var(--scrollbar-thumb);
     border-radius: 4px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #49769F; 
+    background: var(--scrollbar-thumb-hover);
+  }
+
+  /* Focus styles */
+  *:focus-visible {
+    outline: 2px solid var(--gold-primary);
+    outline-offset: 2px;
+  }
+
+  /* Selection */
+  ::selection {
+    background-color: rgba(184, 134, 11, 0.3);
+    color: var(--text-primary);
   }
 }
 
-@layer utilities {
-  .text-ocean {
-    color: #0A4174;
+@layer components {
+  /* ===== Theme-Aware Backgrounds ===== */
+  .bg-theme-primary { background-color: var(--bg-primary); }
+  .bg-theme-secondary { background-color: var(--bg-secondary); }
+  .bg-theme-tertiary { background-color: var(--bg-tertiary); }
+  .bg-theme-card { background-color: var(--bg-card); }
+  .bg-theme-input { background-color: var(--bg-input); }
+  .bg-theme-elevated { background-color: var(--bg-elevated); }
+
+  /* ===== Theme-Aware Text ===== */
+  .text-theme-primary { color: var(--text-primary); }
+  .text-theme-secondary { color: var(--text-secondary); }
+  .text-theme-muted { color: var(--text-muted); }
+  .text-theme-accent { color: var(--text-accent); }
+
+  /* ===== Theme-Aware Borders ===== */
+  .border-theme { border-color: var(--border-primary); }
+  .border-theme-secondary { border-color: var(--border-secondary); }
+  .border-theme-accent { border-color: var(--border-accent); }
+
+  /* ===== Animated Gradient Background ===== */
+  .animated-gradient {
+    background: linear-gradient(270deg, #0a0a0a, #1a1200, #3F2E03, #1a1200, #0a0a0a);
+    background-size: 400% 400%;
+    animation: gradientShift 12s ease infinite;
   }
-  .bg-ocean {
-    background-color: #0A4174;
+  
+  .light .animated-gradient {
+    background: linear-gradient(270deg, #FAF8F5, #FFF9EB, #FFE08A, #FFF9EB, #FAF8F5);
+    background-size: 400% 400%;
+    animation: gradientShift 12s ease infinite;
   }
-  .border-ocean {
-    border-color: #0A4174;
-  }
-  .hover-text-ocean:hover {
-    color: #001D39;
-  }
-  .hover-bg-ocean:hover {
-    background-color: #001D39;
-  }
-  .glass {
-    background: rgba(255, 255, 255, 0.7);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
-  }
-  .glass-strong {
-    background: rgba(255, 255, 255, 0.85);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-  }
-  .gradient-text {
-    background: linear-gradient(135deg, #0A4174, #49769F);
+
+  /* ===== Gold Gradient Text ===== */
+  .gradient-text-gold {
+    background: linear-gradient(135deg, #B8860B, #D4A843, #E5C46A);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
+
+  /* ===== Glass Effect ===== */
+  .glass-dark {
+    background: rgba(10, 10, 10, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  .glass-light {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+
+  /* ===== Gold Glow Effect ===== */
+  .gold-glow {
+    box-shadow: 0 0 15px rgba(184, 134, 11, 0.2);
+  }
+  .gold-glow-hover:hover {
+    box-shadow: 0 0 25px rgba(184, 134, 11, 0.35);
+  }
+
+  /* ===== Card Hover ===== */
+  .card-hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-elevated);
+    border-color: var(--border-accent);
+  }
 }
 
+@layer utilities {
+  .shadow-theme { box-shadow: var(--shadow-card); }
+  .shadow-theme-lg { box-shadow: var(--shadow-elevated); }
+}
+
+/* ===== Keyframes ===== */
+@keyframes gradientShift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+/* ===== Timeline ===== */
 .timeline-step.active .timeline-marker {
-  background-color: #0A4174;
-  border-color: #0A4174;
+  background-color: #B8860B;
+  border-color: #B8860B;
 }
-
 .timeline-step.completed .timeline-line {
-  background-color: #0A4174;
+  background-color: #B8860B;
 }
 
+/* ===== Chart Bars ===== */
 .chart-bar:hover {
-  opacity: 0.8;
+  opacity: 0.85;
+  filter: brightness(1.1);
 }
+
+/* ===== Reduced Motion ===== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .animated-gradient {
+    animation: none !important;
+  }
+}
+
+/* ===== Toaster theme overrides ===== */
+.dark [data-sonner-toaster],
+.dark .Toastify__toast {
+  --toast-bg: #1f1f1f;
+  --toast-text: #f5f5f5;
+}
+
+/* ===== Infinite Marquee Animations ===== */
+@keyframes marquee-left {
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marquee-right {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0%); }
+}
+
+.animate-marquee-left {
+  display: flex;
+  width: max-content;
+  animation: marquee-left 50s linear infinite;
+  will-change: transform;
+}
+
+.animate-marquee-right {
+  display: flex;
+  width: max-content;
+  animation: marquee-right 50s linear infinite;
+  will-change: transform;
+}
+
+/* Pause marquee on hover over container or cards */
+.marquee-container:hover .animate-marquee-left,
+.marquee-container:hover .animate-marquee-right {
+  animation-play-state: paused !important;
+}
+

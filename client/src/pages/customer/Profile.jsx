@@ -1,70 +1,61 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import authService from '../../services/authService';
-import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
+import Button from '../../components/common/Button';
 import toast from 'react-hot-toast';
 
 const Profile = () => {
   const { user, checkUser } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [passwordLoading, setPasswordLoading] = useState(false);
-  
-  const [profileData, setProfileData] = useState({
+  const { isDark } = useTheme();
+
+  const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-  });
-
-  const [addressData, setAddressData] = useState({
     street: '',
     city: '',
     state: '',
     zipCode: '',
-    country: 'India',
+    country: 'India'
   });
-
-  const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (user) {
-      setProfileData({
+      const addr = user.addresses?.[0] || {};
+      setFormData({
         name: user.name || '',
         email: user.email || '',
         phone: user.phone || '',
-      });
-      const defaultAddr = user.addresses?.[0] || {};
-      setAddressData({
-        street: defaultAddr.street || '',
-        city: defaultAddr.city || '',
-        state: defaultAddr.state || '',
-        zipCode: defaultAddr.zipCode || '',
-        country: defaultAddr.country || 'India',
+        street: addr.street || '',
+        city: addr.city || '',
+        state: addr.state || '',
+        zipCode: addr.zipCode || '',
+        country: addr.country || 'India'
       });
     }
   }, [user]);
 
-  const handleProfileUpdate = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const payload = {
-        name: profileData.name,
-        phone: profileData.phone,
-        addresses: [
-          {
-            ...addressData,
-            isDefault: true,
-          },
-        ],
-      };
-      await authService.updateProfile(payload);
-      toast.success('Profile and default address saved');
+      await authService.updateProfile({
+        name: formData.name,
+        phone: formData.phone,
+        addresses: [{
+          street: formData.street,
+          city: formData.city,
+          state: formData.state,
+          zipCode: formData.zipCode,
+          country: formData.country,
+          isDefault: true
+        }]
+      });
       await checkUser();
+      toast.success('Profile updated successfully');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to update profile');
     } finally {
@@ -72,139 +63,42 @@ const Profile = () => {
     }
   };
 
-  const handlePasswordUpdate = async (e) => {
-    e.preventDefault();
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error('New passwords do not match');
-      return;
-    }
-    setPasswordLoading(true);
-    try {
-      await authService.changePassword({
-        currentPassword: passwordData.currentPassword,
-        newPassword: passwordData.newPassword
-      });
-      toast.success('Password changed successfully');
-      setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to change password');
-    } finally {
-      setPasswordLoading(false);
-    }
-  };
+  const cardBg = isDark ? 'bg-dark-800 border-dark-700' : 'bg-white border-gray-200';
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-3xl font-serif text-[#1a1a1a] mb-8">My Profile</h1>
-      
-      <div className="bg-white border border-gray-200 rounded-sm overflow-hidden mb-8">
-        <div className="px-6 py-4 bg-[#FAFAF7] border-b border-gray-200">
-          <h2 className="text-xl font-serif text-[#1a1a1a]">Personal Information & Address</h2>
-        </div>
-        <div className="p-6">
-          <form onSubmit={handleProfileUpdate} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="Full Name"
-                required
-                placeholder="e.g., Vikramaditya Sharma"
-                value={profileData.name}
-                onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-              />
-              <Input
-                label="Email Address"
-                type="email"
-                required
-                placeholder="your.email@example.com"
-                value={profileData.email}
-                onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
-                disabled
-              />
-              <Input
-                label="Phone Number"
-                required
-                placeholder="e.g., +91 98765 43210"
-                value={profileData.phone}
-                onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
-              />
+    <div className={`min-h-screen py-12 transition-colors ${isDark ? 'bg-dark-900 text-gray-100' : 'bg-[#FAF8F5] text-gray-900'}`}>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 className={`text-3xl font-serif mb-8 ${isDark ? 'text-white' : 'text-gray-900'}`}>Account Profile</h1>
+
+        <div className={`border rounded-xl p-8 shadow-sm ${cardBg}`}>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <h2 className={`text-xl font-serif border-b pb-3 ${isDark ? 'text-white border-dark-700' : 'text-gray-900 border-gray-200'}`}>
+              Personal Information
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Input label="Full Name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
+              <Input label="Email Address" value={formData.email} disabled className="opacity-60 cursor-not-allowed" />
+              <Input label="Phone Number" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} placeholder="+91 98765 43210" />
             </div>
 
-            <div className="border-t border-gray-200 pt-4 mt-4">
-              <h3 className="text-base font-serif text-[#1a1a1a] mb-3">Saved Shipping Address</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Street Address"
-                  placeholder="e.g., Flat 402, Heritage Heights, MG Road"
-                  className="md:col-span-2"
-                  value={addressData.street}
-                  onChange={(e) => setAddressData({ ...addressData, street: e.target.value })}
-                />
-                <Input
-                  label="City"
-                  placeholder="e.g., Mumbai"
-                  value={addressData.city}
-                  onChange={(e) => setAddressData({ ...addressData, city: e.target.value })}
-                />
-                <Input
-                  label="State"
-                  placeholder="e.g., Maharashtra"
-                  value={addressData.state}
-                  onChange={(e) => setAddressData({ ...addressData, state: e.target.value })}
-                />
-                <Input
-                  label="PIN Code"
-                  placeholder="e.g., 400001"
-                  value={addressData.zipCode}
-                  onChange={(e) => setAddressData({ ...addressData, zipCode: e.target.value })}
-                />
-                <Input
-                  label="Country"
-                  placeholder="e.g., India"
-                  value={addressData.country}
-                  onChange={(e) => setAddressData({ ...addressData, country: e.target.value })}
-                />
+            <h2 className={`text-xl font-serif border-b pb-3 pt-4 ${isDark ? 'text-white border-dark-700' : 'text-gray-900 border-gray-200'}`}>
+              Saved Shipping Address
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="md:col-span-2">
+                <Input label="Street Address" value={formData.street} onChange={(e) => setFormData({ ...formData, street: e.target.value })} placeholder="House/Flat No., Street, Landmark" />
               </div>
+              <Input label="City" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} placeholder="e.g. Mumbai" />
+              <Input label="State" value={formData.state} onChange={(e) => setFormData({ ...formData, state: e.target.value })} placeholder="e.g. Maharashtra" />
+              <Input label="PIN Code" value={formData.zipCode} onChange={(e) => setFormData({ ...formData, zipCode: e.target.value })} placeholder="e.g. 400001" />
+              <Input label="Country" value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })} />
             </div>
 
-            <p className="text-xs text-gray-500 mb-4">* Email address cannot be changed</p>
-            
-            <Button type="submit" isLoading={loading}>Save Profile & Address</Button>
-          </form>
-        </div>
-      </div>
-
-      <div className="bg-white border border-gray-200 rounded-sm overflow-hidden">
-        <div className="px-6 py-4 bg-[#FAFAF7] border-b border-gray-200">
-          <h2 className="text-xl font-serif text-[#1a1a1a]">Change Password</h2>
-        </div>
-        <div className="p-6">
-          <form onSubmit={handlePasswordUpdate} className="space-y-4 max-w-md">
-            <Input
-              label="Current Password"
-              type="password"
-              required
-              placeholder="Enter current password"
-              value={passwordData.currentPassword}
-              onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-            />
-            <Input
-              label="New Password"
-              type="password"
-              required
-              placeholder="Enter new password (min 6 chars)"
-              value={passwordData.newPassword}
-              onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-            />
-            <Input
-              label="Confirm New Password"
-              type="password"
-              required
-              placeholder="Re-enter new password"
-              value={passwordData.confirmPassword}
-              onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-            />
-            
-            <Button type="submit" isLoading={passwordLoading}>Change Password</Button>
+            <div className="flex justify-end pt-4">
+              <Button type="submit" isLoading={loading} className="shadow-gold">Save Changes</Button>
+            </div>
           </form>
         </div>
       </div>

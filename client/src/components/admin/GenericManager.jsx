@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import adminService from '../../services/adminService';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
+import { useTheme } from '../../context/ThemeContext';
 import toast from 'react-hot-toast';
 import { FiEdit2, FiTrash2 } from 'react-icons/fi';
 
@@ -13,6 +14,8 @@ const GenericManager = ({
   deleteFn,
   fields
 }) => {
+  const { isDark } = useTheme();
+
   const defaultFields = [
     { name: 'name', label: 'Name', required: true, placeholder: `e.g., ${title} Name` },
     { name: 'description', label: 'Description (Optional)', type: 'textarea', placeholder: `Enter historical context or notes for this ${title.toLowerCase()}...` }
@@ -22,9 +25,7 @@ const GenericManager = ({
 
   const getInitialFormData = () => {
     const data = {};
-    formFields.forEach(f => {
-      data[f.name] = '';
-    });
+    formFields.forEach(f => { data[f.name] = ''; });
     return data;
   };
 
@@ -100,74 +101,47 @@ const GenericManager = ({
     }
   };
 
-  if (loading) return <div className="p-8 text-gray-500">Loading {title.toLowerCase()} data...</div>;
+  if (loading) return <div className={`p-8 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Loading {title.toLowerCase()} data...</div>;
+
+  const inputClasses = `w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500 sm:text-sm ${
+    isDark ? 'bg-dark-700 border-dark-600 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+  }`;
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2">
-        <h1 className="text-2xl font-serif text-[#1a1a1a] mb-6">{title} Catalog</h1>
-        <div className="bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden">
+        <h1 className={`text-2xl font-serif mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>{title} Catalog</h1>
+        <div className={`border rounded-lg shadow-sm overflow-hidden ${
+          isDark ? 'bg-dark-800 border-dark-600' : 'bg-white border-gray-200'
+        }`}>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-[#FAFAF7]">
+            <table className={`min-w-full divide-y ${isDark ? 'divide-dark-600' : 'divide-gray-200'}`}>
+              <thead className={isDark ? 'bg-dark-700' : 'bg-gray-50'}>
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  {formFields.some(f => f.name === 'code') && (
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code</th>
-                  )}
-                  {formFields.some(f => f.name === 'mintMark') && (
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mint Mark</th>
-                  )}
-                  {formFields.some(f => f.name === 'location') && (
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                  )}
-                  {formFields.some(f => f.name === 'description') && (
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                  )}
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Name</th>
+                  {formFields.some(f => f.name === 'code') && <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Code</th>}
+                  {formFields.some(f => f.name === 'mintMark') && <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Mint Mark</th>}
+                  {formFields.some(f => f.name === 'location') && <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Location</th>}
+                  {formFields.some(f => f.name === 'description') && <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Description</th>}
+                  <th className={`px-6 py-3 text-right text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className={`divide-y ${isDark ? 'divide-dark-600' : 'divide-gray-200'}`}>
                 {items.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" className="px-6 py-8 text-center text-sm text-gray-500">
-                      No {title.toLowerCase()} items recorded yet. Use the form to add one.
-                    </td>
-                  </tr>
+                  <tr><td colSpan="6" className={`px-6 py-8 text-center text-sm ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>No {title.toLowerCase()} items recorded yet.</td></tr>
                 ) : (
                   items.map((item) => (
-                    <tr key={item._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {item.flag && <span className="mr-2">{item.flag}</span>}
-                        {item.name}
+                    <tr key={item._id} className={`transition-colors ${isDark ? 'hover:bg-dark-700' : 'hover:bg-gray-50'}`}>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                        {item.flag && <span className="mr-2">{item.flag}</span>}{item.name}
                       </td>
-                      {formFields.some(f => f.name === 'code') && (
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.code || '-'}</td>
-                      )}
-                      {formFields.some(f => f.name === 'mintMark') && (
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.mintMark || '-'}</td>
-                      )}
-                      {formFields.some(f => f.name === 'location') && (
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{item.location || '-'}</td>
-                      )}
-                      {formFields.some(f => f.name === 'description') && (
-                        <td className="px-6 py-4 text-sm text-gray-500 max-w-xs truncate">{item.description || '-'}</td>
-                      )}
+                      {formFields.some(f => f.name === 'code') && <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{item.code || '-'}</td>}
+                      {formFields.some(f => f.name === 'mintMark') && <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{item.mintMark || '-'}</td>}
+                      {formFields.some(f => f.name === 'location') && <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{item.location || '-'}</td>}
+                      {formFields.some(f => f.name === 'description') && <td className={`px-6 py-4 text-sm max-w-xs truncate ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{item.description || '-'}</td>}
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                        <button 
-                          onClick={() => handleEdit(item)} 
-                          className="text-[#B8860B] hover:text-[#8B6914] mr-4 p-1"
-                          title="Edit"
-                        >
-                          <FiEdit2 />
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(item._id)} 
-                          className="text-red-600 hover:text-red-900 p-1"
-                          title="Delete"
-                        >
-                          <FiTrash2 />
-                        </button>
+                        <button onClick={() => handleEdit(item)} className="text-gold-500 hover:text-gold-400 mr-4 p-1" title="Edit"><FiEdit2 /></button>
+                        <button onClick={() => handleDelete(item._id)} className="text-red-500 hover:text-red-400 p-1" title="Delete"><FiTrash2 /></button>
                       </td>
                     </tr>
                   ))
@@ -179,8 +153,12 @@ const GenericManager = ({
       </div>
 
       <div>
-        <div className="bg-white p-6 border border-gray-200 rounded-sm shadow-sm sticky top-6">
-          <h2 className="text-lg font-serif text-[#1a1a1a] mb-4 border-b pb-2">
+        <div className={`p-6 border rounded-lg shadow-sm sticky top-6 ${
+          isDark ? 'bg-dark-800 border-dark-600' : 'bg-white border-gray-200'
+        }`}>
+          <h2 className={`text-lg font-serif mb-4 border-b pb-2 ${
+            isDark ? 'text-white border-dark-600' : 'text-gray-900 border-gray-200'
+          }`}>
             {editId ? `Edit ${title}` : `Add New ${title}`}
           </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -188,70 +166,31 @@ const GenericManager = ({
               if (field.type === 'textarea') {
                 return (
                   <div key={field.name}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                       {field.label} {field.required && <span className="text-red-500">*</span>}
                     </label>
-                    <textarea 
-                      rows="3" 
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#B8860B] focus:border-[#B8860B] sm:text-sm" 
-                      placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}...`}
-                      value={formData[field.name] || ''} 
-                      onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
-                      required={field.required}
-                    />
+                    <textarea rows="3" className={inputClasses} placeholder={field.placeholder || ''} value={formData[field.name] || ''} onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })} required={field.required}></textarea>
                   </div>
                 );
               }
-
               if (field.type === 'countrySelect') {
                 return (
                   <div key={field.name}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                       {field.label} {field.required && <span className="text-red-500">*</span>}
                     </label>
-                    <select
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#B8860B] focus:border-[#B8860B] sm:text-sm bg-white"
-                      value={formData[field.name] || ''}
-                      onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })}
-                      required={field.required}
-                    >
+                    <select className={inputClasses} value={formData[field.name] || ''} onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })} required={field.required}>
                       <option value="">{field.placeholder || '-- Select Country --'}</option>
-                      {countries.map(c => (
-                        <option key={c._id} value={c._id}>
-                          {c.flag ? `${c.flag} ` : ''}{c.name} ({c.code})
-                        </option>
-                      ))}
+                      {countries.map(c => (<option key={c._id} value={c._id}>{c.flag ? `${c.flag} ` : ''}{c.name} ({c.code})</option>))}
                     </select>
                   </div>
                 );
               }
-
-              return (
-                <Input 
-                  key={field.name}
-                  label={field.label} 
-                  required={field.required} 
-                  placeholder={field.placeholder || `Enter ${field.label.toLowerCase()}...`}
-                  value={formData[field.name] || ''} 
-                  onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })} 
-                />
-              );
+              return (<Input key={field.name} label={field.label} required={field.required} placeholder={field.placeholder || ''} value={formData[field.name] || ''} onChange={(e) => setFormData({ ...formData, [field.name]: e.target.value })} />);
             })}
-
-            <div className="flex space-x-2 pt-3 border-t">
-              <Button type="submit" className="w-full">
-                {editId ? `Update ${title}` : `Save ${title}`}
-              </Button>
-              {editId && (
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="w-full" 
-                  onClick={() => { setEditId(null); setFormData(getInitialFormData()); }}
-                >
-                  Cancel
-                </Button>
-              )}
+            <div className={`flex space-x-2 pt-3 border-t ${isDark ? 'border-dark-600' : 'border-gray-200'}`}>
+              <Button type="submit" className="w-full">{editId ? `Update ${title}` : `Save ${title}`}</Button>
+              {editId && (<Button type="button" variant="outline" className="w-full" onClick={() => { setEditId(null); setFormData(getInitialFormData()); }}>Cancel</Button>)}
             </div>
           </form>
         </div>

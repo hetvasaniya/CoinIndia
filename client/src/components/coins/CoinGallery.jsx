@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { FiZoomIn, FiMaximize2 } from 'react-icons/fi';
 import { STATIC_IMAGES } from '../../data/staticImages';
+import { useTheme } from '../../context/ThemeContext';
 
 const CoinGallery = ({ images }) => {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const { isDark } = useTheme();
 
   const imageList = Array.isArray(images) && images.length > 0
     ? images
@@ -25,29 +27,31 @@ const CoinGallery = ({ images }) => {
 
   return (
     <div className="space-y-4 select-none">
-      {/* Main Interactive Zoom Box */}
       <div 
-        className="bg-[#FAFAF7] aspect-square relative border border-gray-200 rounded-sm overflow-hidden p-6 cursor-zoom-in group"
+        className={`aspect-square relative border rounded-lg overflow-hidden p-6 cursor-zoom-in group ${
+          isDark ? 'bg-dark-700 border-dark-600' : 'bg-[#FAFAF7] border-gray-200'
+        }`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         onMouseMove={handleMouseMove}
         onClick={() => setIsLightboxOpen(true)}
       >
-        {/* Zoom Hint Badge */}
-        <div className="absolute top-3 left-3 z-20 bg-white/90 backdrop-blur-sm border border-gray-200 px-2.5 py-1 rounded text-xs font-medium text-gray-700 flex items-center gap-1.5 shadow-sm transition-opacity duration-300 group-hover:opacity-100 opacity-80">
-          <FiZoomIn className="text-[#B8860B]" /> Hover to Zoom &bull; Click to Expand
+        <div className={`absolute top-3 left-3 z-20 backdrop-blur-sm border px-2.5 py-1 rounded text-xs font-medium flex items-center gap-1.5 shadow-sm transition-opacity duration-300 group-hover:opacity-100 opacity-80 ${
+          isDark ? 'bg-dark-800/90 border-dark-600 text-gray-300' : 'bg-white/90 border-gray-200 text-gray-700'
+        }`}>
+          <FiZoomIn className="text-gold-500" /> Hover to Zoom &bull; Click to Expand
         </div>
 
-        {/* Maximize Button */}
         <button 
           onClick={(e) => { e.stopPropagation(); setIsLightboxOpen(true); }}
-          className="absolute top-3 right-3 z-20 p-2 bg-white/90 backdrop-blur-sm border border-gray-200 rounded text-gray-600 hover:text-[#B8860B] transition-colors shadow-sm"
+          className={`absolute top-3 right-3 z-20 p-2 backdrop-blur-sm border rounded transition-colors shadow-sm ${
+            isDark ? 'bg-dark-800/90 border-dark-600 text-gray-400 hover:text-gold-400' : 'bg-white/90 border-gray-200 text-gray-600 hover:text-gold-600'
+          }`}
           title="Fullscreen Lightbox View"
         >
           <FiMaximize2 />
         </button>
 
-        {/* Main Coin Image with Magnification */}
         <div className="w-full h-full relative overflow-hidden flex items-center justify-center">
           <img
             src={currentImgSrc}
@@ -60,10 +64,9 @@ const CoinGallery = ({ images }) => {
           />
         </div>
 
-        {/* Lens Overlay Crosshair Indicator */}
         {isHovered && (
           <div 
-            className="pointer-events-none absolute border border-[#B8860B]/50 bg-[#B8860B]/10 rounded-full shadow-inner"
+            className="pointer-events-none absolute border border-gold-500/50 bg-gold-500/10 rounded-full shadow-inner"
             style={{
               width: '100px',
               height: '100px',
@@ -74,7 +77,6 @@ const CoinGallery = ({ images }) => {
         )}
       </div>
 
-      {/* Thumbnails Bar */}
       {imageList.length > 1 && (
         <div className="flex space-x-3 overflow-x-auto pb-2">
           {imageList.map((img, index) => {
@@ -83,18 +85,16 @@ const CoinGallery = ({ images }) => {
               <button
                 key={index}
                 onClick={() => setActiveImageIndex(index)}
-                className={`flex-shrink-0 w-20 h-20 bg-[#FAFAF7] rounded border-2 transition-all p-2 flex flex-col items-center justify-center ${
+                className={`flex-shrink-0 w-20 h-20 rounded-lg border-2 transition-all p-2 flex flex-col items-center justify-center ${
                   activeImageIndex === index 
-                    ? 'border-[#B8860B] ring-1 ring-[#B8860B] bg-amber-50/40' 
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-gold-500 ring-1 ring-gold-500 bg-gold-500/5' 
+                    : isDark 
+                      ? 'border-dark-600 bg-dark-700 hover:border-gray-500'
+                      : 'border-gray-200 bg-[#FAFAF7] hover:border-gray-300'
                 }`}
               >
-                <img
-                  src={imgSrc}
-                  alt={`Thumbnail ${index + 1}`}
-                  className="w-full h-12 object-contain mb-1"
-                />
-                <span className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">
+                <img src={imgSrc} alt={`Thumbnail ${index + 1}`} className="w-full h-12 object-contain mb-1" />
+                <span className={`text-[10px] font-medium uppercase tracking-wider ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
                   {index === 0 ? 'Obverse' : index === 1 ? 'Reverse' : `View ${index + 1}`}
                 </span>
               </button>
@@ -103,7 +103,6 @@ const CoinGallery = ({ images }) => {
         </div>
       )}
 
-      {/* Fullscreen Lightbox Modal */}
       {isLightboxOpen && (
         <div 
           className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4"
@@ -111,7 +110,7 @@ const CoinGallery = ({ images }) => {
         >
           <button 
             onClick={() => setIsLightboxOpen(false)}
-            className="absolute top-6 right-6 text-white text-3xl hover:text-[#B8860B] transition-colors"
+            className="absolute top-6 right-6 text-white text-3xl hover:text-gold-500 transition-colors"
           >
             &times;
           </button>

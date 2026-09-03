@@ -1,3 +1,5 @@
+import { useTheme } from '../../context/ThemeContext';
+
 const Button = ({ 
   children, 
   variant = 'primary', 
@@ -7,27 +9,40 @@ const Button = ({
   disabled,
   ...props 
 }) => {
-  const baseStyles = 'inline-flex items-center justify-center font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2';
+  const { isDark } = useTheme();
+  
+  const baseStyles = 'inline-flex items-center justify-center font-medium rounded-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2';
   
   const variants = {
-    primary: 'bg-[#B8860B] text-white hover:bg-[#8B6914] focus:ring-[#B8860B]',
-    secondary: 'bg-[#1a1a1a] text-white hover:bg-black focus:ring-[#1a1a1a]',
-    outline: 'border border-[#B8860B] text-[#B8860B] hover:bg-[#B8860B] hover:text-white focus:ring-[#B8860B]',
-    ghost: 'text-[#4a4a4a] hover:text-[#B8860B] hover:bg-gray-100',
-    danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
+    primary: `bg-gradient-to-r from-gold-600 to-gold-500 text-white hover:from-gold-500 hover:to-gold-400 focus:ring-gold-500 shadow-sm hover:shadow-gold ${
+      isDark ? 'focus:ring-offset-dark-900' : 'focus:ring-offset-white'
+    }`,
+    secondary: `${isDark ? 'bg-dark-700 text-white hover:bg-dark-600' : 'bg-gray-900 text-white hover:bg-gray-800'} focus:ring-gray-500 ${
+      isDark ? 'focus:ring-offset-dark-900' : 'focus:ring-offset-white'
+    }`,
+    outline: `border-2 border-gold-500 text-gold-500 hover:bg-gold-500 hover:text-white focus:ring-gold-500 ${
+      isDark ? 'focus:ring-offset-dark-900' : 'focus:ring-offset-white'
+    }`,
+    ghost: `${isDark ? 'text-gray-300 hover:text-gold-400 hover:bg-dark-700' : 'text-gray-600 hover:text-gold-600 hover:bg-gray-100'} focus:ring-gold-500`,
+    danger: `bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 ${
+      isDark ? 'focus:ring-offset-dark-900' : 'focus:ring-offset-white'
+    }`,
+    success: `bg-emerald-600 text-white hover:bg-emerald-700 focus:ring-emerald-500 ${
+      isDark ? 'focus:ring-offset-dark-900' : 'focus:ring-offset-white'
+    }`,
   };
 
   const sizes = {
     sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg',
+    md: 'px-5 py-2.5 text-sm',
+    lg: 'px-6 py-3 text-base',
   };
 
   const disabledStyles = disabled || isLoading ? 'opacity-50 cursor-not-allowed' : '';
 
   return (
     <button
-      className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${disabledStyles} ${className}`}
+      className={`${baseStyles} ${variants[variant] || variants.primary} ${sizes[size]} ${disabledStyles} ${className}`}
       disabled={disabled || isLoading}
       {...props}
     >

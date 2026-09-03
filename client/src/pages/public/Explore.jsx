@@ -5,8 +5,10 @@ import coinService from '../../services/coinService';
 import CoinGrid from '../../components/coins/CoinGrid';
 import CoinFilters from '../../components/coins/CoinFilters';
 import { SORT_OPTIONS } from '../../utils/constants';
+import { useTheme } from '../../context/ThemeContext';
 
 const Explore = () => {
+  const { isDark } = useTheme();
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const initialCategory = searchParams.get('category');
@@ -74,51 +76,62 @@ const Explore = () => {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-8 pb-4 border-b border-gray-200">
-        <h1 className="text-3xl font-serif text-[#1a1a1a] mb-4 md:mb-0">Explore Catalog</h1>
-        
-        <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full md:w-auto">
-          {/* Search */}
-          <div className="relative w-full sm:w-64">
-            <input
-              type="text"
-              placeholder="Search by coin name, ruler, era..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-[#B8860B] focus:ring-1 focus:ring-[#B8860B] text-sm"
-              value={filters.search}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-            />
-            <FiSearch className="absolute left-3 top-2.5 text-gray-400" />
+    <div className={`min-h-screen py-8 transition-colors ${isDark ? 'bg-dark-900 text-gray-100' : 'bg-[#FAF8F5] text-gray-900'}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className={`flex flex-col md:flex-row justify-between items-center mb-8 pb-4 border-b ${
+          isDark ? 'border-dark-700' : 'border-gray-200'
+        }`}>
+          <div>
+            <h1 className={`text-3xl font-serif ${isDark ? 'text-white' : 'text-gray-900'}`}>Explore Catalog</h1>
+            <p className={`text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Browse our authenticated collection of historical coins</p>
           </div>
           
-          {/* Sort */}
-          <select
-            className="w-full sm:w-48 pl-3 pr-8 py-2 border border-gray-300 rounded-sm focus:outline-none focus:border-[#B8860B] text-sm bg-white"
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-          >
-            {SORT_OPTIONS.map(option => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="flex flex-col lg:flex-row">
-        {/* Sidebar Filters */}
-        <CoinFilters 
-          filters={filters} 
-          setFilters={setFilters} 
-          categories={categories} 
-          mints={mints} 
-        />
-
-        {/* Main Content */}
-        <div className="flex-1 mt-8 lg:mt-0">
-          <div className="mb-4 text-sm text-gray-500">
-            Showing <span className="font-medium text-[#1a1a1a]">{coins.length}</span> results
+          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 w-full md:w-auto mt-4 md:mt-0">
+            {/* Search */}
+            <div className="relative w-full sm:w-64">
+              <input
+                type="text"
+                placeholder="Search by coin name, ruler, era..."
+                className={`w-full pl-10 pr-4 py-2 border rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-gold-500/30 focus:border-gold-500 ${
+                  isDark ? 'bg-dark-800 border-dark-600 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                }`}
+                value={filters.search}
+                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+              />
+              <FiSearch className={`absolute left-3 top-2.5 ${isDark ? 'text-gray-500' : 'text-gray-400'}`} />
+            </div>
+            
+            {/* Sort */}
+            <select
+              className={`w-full sm:w-48 pl-3 pr-8 py-2 border rounded-lg text-sm transition-all focus:outline-none focus:border-gold-500 ${
+                isDark ? 'bg-dark-800 border-dark-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+              }`}
+              value={sort}
+              onChange={(e) => setSort(e.target.value)}
+            >
+              {SORT_OPTIONS.map(option => (
+                <option key={option.value} value={option.value}>{option.label}</option>
+              ))}
+            </select>
           </div>
-          <CoinGrid coins={coins} loading={loading} />
+        </div>
+
+        <div className="flex flex-col lg:flex-row">
+          {/* Sidebar Filters */}
+          <CoinFilters 
+            filters={filters} 
+            setFilters={setFilters} 
+            categories={categories} 
+            mints={mints} 
+          />
+
+          {/* Main Content */}
+          <div className="flex-1 mt-8 lg:mt-0">
+            <div className={`mb-4 text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+              Showing <span className={`font-medium ${isDark ? 'text-gold-400' : 'text-gray-900'}`}>{coins.length}</span> results
+            </div>
+            <CoinGrid coins={coins} loading={loading} />
+          </div>
         </div>
       </div>
     </div>

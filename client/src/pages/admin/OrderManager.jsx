@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import adminService from '../../services/adminService';
+import { useTheme } from '../../context/ThemeContext';
 import { 
   formatPrice, 
   formatDate, 
@@ -12,10 +13,11 @@ import toast from 'react-hot-toast';
 import { 
   FiSearch, FiFilter, FiRefreshCw, FiEye, FiPrinter, FiXCircle, 
   FiDollarSign, FiBox, FiTruck, FiCheckCircle, FiClock, FiAlertCircle,
-  FiUser, FiMapPin, FiCreditCard, FiPackage, FiArrowRight, FiShield, FiTag
+  FiUser, FiMapPin, FiCreditCard, FiPackage, FiArrowRight, FiShield, FiTag, FiLock
 } from 'react-icons/fi';
 
 const OrderManager = () => {
+  const { isDark } = useTheme();
   const [orders, setOrders] = useState([]);
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -81,6 +83,11 @@ const OrderManager = () => {
   };
 
   const handleStatusChange = async (id, newStatus) => {
+    const targetOrder = orders.find(o => o._id === id) || selectedOrder;
+    if (targetOrder?.status?.toLowerCase() === 'delivered') {
+      toast.error('Delivered orders are locked and cannot be updated.');
+      return;
+    }
     try {
       const updated = await adminService.updateOrderStatus(id, { status: newStatus });
       toast.success(`Order status updated to ${newStatus.toUpperCase()}`);
@@ -112,6 +119,10 @@ const OrderManager = () => {
 
   const openCancelModal = (order, e) => {
     if (e) e.stopPropagation();
+    if (order?.status?.toLowerCase() === 'delivered') {
+      toast.error('Delivered orders cannot be cancelled.');
+      return;
+    }
     setSelectedOrder(order);
     setCancelForm({
       reason: 'Customer requested cancellation',
@@ -125,6 +136,10 @@ const OrderManager = () => {
   const handleCancelSubmit = async (e) => {
     e.preventDefault();
     if (!selectedOrder) return;
+    if (selectedOrder?.status?.toLowerCase() === 'delivered') {
+      toast.error('Delivered orders cannot be cancelled.');
+      return;
+    }
     try {
       const fullReason = cancelForm.customReason 
         ? `${cancelForm.reason} - ${cancelForm.customReason}` 
@@ -179,6 +194,10 @@ const OrderManager = () => {
 
   const handleSaveTracking = async () => {
     if (!selectedOrder) return;
+    if (selectedOrder?.status?.toLowerCase() === 'delivered') {
+      toast.error('Delivered orders are locked and tracking details cannot be modified.');
+      return;
+    }
     try {
       const res = await adminService.updateOrderStatus(selectedOrder._id, {
         trackingNumber: trackingForm.trackingNumber,
@@ -391,7 +410,8 @@ const OrderManager = () => {
                   </tr>
                 ) : (
                   filteredOrders.map((order) => {
-                    const isCancelled = order.status === 'cancelled';
+                    const isCancelled = order.status?.toLowerCase() === 'cancelled';
+                    const isDelivered = order.status?.toLowerCase() === 'delivered';
                     const hasRefund = order.refund && order.refund.status && order.refund.status !== 'none';
                     const displayId = order.orderNumber || `#${order._id.substring(order._id.length - 8).toUpperCase()}`;
 
@@ -399,7 +419,7 @@ const OrderManager = () => {
                       <tr
                         key={order._id}
                         className={`transition-colors cursor-pointer ${
-                          isCancelled ? 'bg-red-50/30 hover:bg-red-50/50' : 'hover:bg-gray-50'
+                          isCancelled ? 'bg-red-50/30 hover:bg-red-50/50' : isDelivered ? 'bg-green-50/20 hover:bg-green-50/40' : 'hover:bg-gray-50'
                         }`}
                         onClick={() => openOrderDetail(order)}
                       >
@@ -412,6 +432,11 @@ const OrderManager = () => {
                             {isCancelled && (
                               <span className="text-[10px] bg-red-100 text-red-800 font-bold px-1.5 py-0.5 rounded uppercase">
                                 Cancelled
+                              </span>
+                            )}
+                            {isDelivered && (
+                              <span className="text-[10px] bg-green-100 text-green-800 font-bold px-1.5 py-0.5 rounded uppercase inline-flex items-center gap-0.5">
+                                <FiLock className="w-2.5 h-2.5" /> Delivered
                               </span>
                             )}
                           </div>
@@ -437,7 +462,7 @@ const OrderManager = () => {
                                 <img
                                   src={item.coinImage || getImageUrl(item.coin?.images)}
                                   alt={item.coinName}
-                                  className="w-full h-full object-contain mix-blend-multiply"
+                                  className={`w-full h-full object-contain ${isDark ? '' : 'mix-blend-multiply'}`}
                                 />
                               </div>
                             ))}
@@ -485,6 +510,10 @@ const OrderManager = () => {
                             <span className="px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-800 border border-red-300">
                               CANCELLED
                             </span>
+                          ) : isDelivered ? (
+                            <span className="px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-800 border border-green-300 inline-flex items-center gap-1">
+                              <FiLock className="w-3 h-3" /> DELIVERED (LOCKED)
+                            </span>
                           ) : (
                             <select
                               value={order.status?.toLowerCase() || 'pending'}
@@ -519,7 +548,7 @@ const OrderManager = () => {
                             <FiPackage className="w-4 h-4" />
                           </button>
 
-                          {!isCancelled && (
+                          {!isCancelled && !isDelivered && (
                             <button
                               onClick={(e) => openCancelModal(order, e)}
                               className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
@@ -583,7 +612,7 @@ const OrderManager = () => {
                               <img
                                 src={item.coinImage || getImageUrl(item.coin?.images)}
                                 alt={item.coinName}
-                                className="w-8 h-8 object-contain mix-blend-multiply"
+                                className={`w-8 h-8 object-contain ${isDark ? '' : 'mix-blend-multiply'}`}
                               />
                               <div>
                                 <p className="text-xs font-medium text-gray-900 line-clamp-1">{item.coinName}</p>
@@ -671,7 +700,19 @@ const OrderManager = () => {
                   Fulfillment Status Workflow
                 </h3>
 
-                {selectedOrder.status === 'cancelled' ? (
+                {selectedOrder.status === 'delivered' ? (
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
+                    <FiCheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="text-sm font-bold text-green-900 flex items-center gap-1.5">
+                        <FiLock className="w-4 h-4 text-green-700" /> ORDER IS DELIVERED & COMPLETED (LOCKED)
+                      </h4>
+                      <p className="text-xs text-green-700 mt-0.5">
+                        This order has been successfully delivered and fulfilled. To preserve audit records and prevent accidental changes, all status, tracking, and details are read-only.
+                      </p>
+                    </div>
+                  </div>
+                ) : selectedOrder.status === 'cancelled' ? (
                   <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
                     <FiAlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
                     <div>
@@ -699,12 +740,13 @@ const OrderManager = () => {
                         return (
                           <div key={step} className="flex flex-col items-center relative z-10">
                             <button
+                              disabled={selectedOrder.status === 'delivered'}
                               onClick={() => handleStatusChange(selectedOrder._id, step)}
                               className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                                 isDone
                                   ? 'bg-[#B8860B] text-white ring-2 ring-amber-200'
                                   : 'bg-white border-2 border-gray-300 text-gray-400 hover:border-gray-400'
-                              } ${isCurrent ? 'scale-110 shadow-md ring-4 ring-amber-100' : ''}`}
+                              } ${isCurrent ? 'scale-110 shadow-md ring-4 ring-amber-100' : ''} ${selectedOrder.status === 'delivered' ? 'cursor-not-allowed opacity-90' : ''}`}
                             >
                               {idx + 1}
                             </button>
@@ -827,7 +869,7 @@ const OrderManager = () => {
                               <img
                                 src={item.coinImage || getImageUrl(item.coin?.images)}
                                 alt={item.coinName}
-                                className="w-10 h-10 object-contain rounded border border-gray-200 p-0.5 mix-blend-multiply bg-white"
+                                className={`w-10 h-10 object-contain rounded border border-gray-200 p-0.5 ${isDark ? '' : 'mix-blend-multiply bg-white'}`}
                               />
                               <div>
                                 <p className="font-semibold text-gray-900 text-xs">{item.coinName}</p>
@@ -971,39 +1013,48 @@ const OrderManager = () => {
                     <label className="text-xs font-medium text-gray-600 block mb-1">Carrier Name</label>
                     <input
                       type="text"
+                      disabled={selectedOrder.status === 'delivered'}
                       value={trackingForm.carrier}
                       onChange={(e) => setTrackingForm({ ...trackingForm, carrier: e.target.value })}
                       placeholder="e.g. BlueDart / Delhivery / IndiaPost"
-                      className="w-full text-xs px-3 py-2 border rounded focus:ring-1 focus:ring-[#B8860B]"
+                      className="w-full text-xs px-3 py-2 border rounded focus:ring-1 focus:ring-[#B8860B] disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                     />
                   </div>
                   <div>
                     <label className="text-xs font-medium text-gray-600 block mb-1">Tracking Number</label>
                     <input
                       type="text"
+                      disabled={selectedOrder.status === 'delivered'}
                       value={trackingForm.trackingNumber}
                       onChange={(e) => setTrackingForm({ ...trackingForm, trackingNumber: e.target.value })}
                       placeholder="e.g. BD123456789IN"
-                      className="w-full text-xs px-3 py-2 border rounded focus:ring-1 focus:ring-[#B8860B]"
+                      className="w-full text-xs px-3 py-2 border rounded focus:ring-1 focus:ring-[#B8860B] disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                     />
                   </div>
                   <div>
                     <label className="text-xs font-medium text-gray-600 block mb-1">Estimated Delivery Date</label>
                     <input
                       type="date"
+                      disabled={selectedOrder.status === 'delivered'}
                       value={trackingForm.estimatedDelivery}
                       onChange={(e) => setTrackingForm({ ...trackingForm, estimatedDelivery: e.target.value })}
-                      className="w-full text-xs px-3 py-2 border rounded focus:ring-1 focus:ring-[#B8860B]"
+                      className="w-full text-xs px-3 py-2 border rounded focus:ring-1 focus:ring-[#B8860B] disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
                 <div className="flex justify-end pt-1">
-                  <button
-                    onClick={handleSaveTracking}
-                    className="px-3 py-1.5 bg-[#1a1a1a] text-white text-xs rounded hover:bg-gray-800"
-                  >
-                    Save Tracking Details
-                  </button>
+                  {selectedOrder.status === 'delivered' ? (
+                    <span className="text-xs text-gray-500 font-medium flex items-center gap-1.5 bg-gray-100 px-3 py-1.5 rounded border border-gray-200">
+                      <FiLock className="w-3.5 h-3.5 text-gray-400" /> Tracking Details Locked (Delivered)
+                    </span>
+                  ) : (
+                    <button
+                      onClick={handleSaveTracking}
+                      className="px-3 py-1.5 bg-[#1a1a1a] text-white text-xs rounded hover:bg-gray-800"
+                    >
+                      Save Tracking Details
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -1314,7 +1365,7 @@ const OrderManager = () => {
                             <img
                               src={item.coinImage || getImageUrl(item.coin?.images)}
                               alt={item.coinName}
-                              className="w-10 h-10 object-contain rounded border p-0.5 mix-blend-multiply"
+                              className={`w-10 h-10 object-contain rounded border p-0.5 ${isDark ? '' : 'mix-blend-multiply'}`}
                             />
                             <div>
                               <p className="font-bold text-gray-900 text-sm">{item.coinName}</p>

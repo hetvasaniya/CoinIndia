@@ -4,9 +4,38 @@ export default {
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
+        // Golden palette
+        gold: {
+          50: '#FFF9EB',
+          100: '#FFF0CC',
+          200: '#FFE08A',
+          300: '#E5C46A',
+          400: '#D4A843',
+          500: '#B8860B', // Primary gold
+          600: '#9A7209',
+          700: '#7C5C07',
+          800: '#5E4505',
+          900: '#3F2E03',
+        },
+        // Dark palette  
+        dark: {
+          50: '#f8fafc',
+          100: '#f1f5f9',
+          200: '#e2e8f0',
+          300: '#cbd5e1',
+          400: '#94a3b8',
+          500: '#64748b',
+          600: '#27272a',
+          700: '#18181b',
+          800: '#121215',
+          900: '#09090b',
+          950: '#030304',
+        },
+        // Legacy ocean colors (kept for any remaining references)
         ocean: {
           50: '#E8F4FA',
           100: '#BDD8E9',
@@ -19,37 +48,65 @@ export default {
           800: '#001229',
           900: '#000A18',
         },
-        mist: {
-          blue: '#99CDD8',
-          mint: '#DAEBE3',
-          peach: '#FDE8D3',
-          rose: '#F3C3B2',
-          sage: '#CFD6C4',
-          charcoal: '#657166',
-        },
-        cream: '#F8FBFD',
-        parchment: '#EEF5F9',
       },
       fontFamily: {
         serif: ['Playfair Display', 'Georgia', 'serif'],
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
       backgroundImage: {
-        'gradient-hero': 'linear-gradient(135deg, #BDD8E9 0%, #DAEBE3 35%, #FDE8D3 70%, #F3C3B2 100%)',
-        'gradient-body': 'linear-gradient(180deg, #EEF5F9 0%, #BDD8E9 30%, #DAEBE3 60%, #F8FBFD 100%)',
-        'gradient-dark': 'linear-gradient(135deg, #001D39 0%, #0A4174 100%)',
-        'gradient-btn': 'linear-gradient(135deg, #0A4174 0%, #49769F 100%)',
-        'gradient-btn-hover': 'linear-gradient(135deg, #001D39 0%, #0A4174 100%)',
-        'gradient-card': 'linear-gradient(180deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%)',
-        'gradient-sidebar': 'linear-gradient(180deg, #001D39 0%, #0A4174 80%, #49769F 100%)',
-      },
-      backdropBlur: {
-        xs: '2px',
+        'gradient-hero-dark': 'linear-gradient(135deg, #0a0a0a 0%, #1a1200 50%, #0a0a0a 100%)',
+        'gradient-hero-light': 'linear-gradient(135deg, #FAF8F5 0%, #FFF9EB 50%, #FAF8F5 100%)',
+        'gradient-gold': 'linear-gradient(135deg, #B8860B 0%, #D4A843 50%, #B8860B 100%)',
+        'gradient-gold-subtle': 'linear-gradient(135deg, rgba(184,134,11,0.1) 0%, rgba(212,168,67,0.05) 100%)',
+        'gradient-dark': 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)',
+        'gradient-sidebar': 'linear-gradient(180deg, #0a0a0a 0%, #141414 60%, #1f1f1f 100%)',
+        'gradient-card-dark': 'linear-gradient(180deg, #1a1a1a 0%, #141414 100%)',
+        'gradient-card-light': 'linear-gradient(180deg, #ffffff 0%, #FEFDFB 100%)',
+        'gradient-btn': 'linear-gradient(135deg, #B8860B 0%, #D4A843 100%)',
+        'gradient-btn-hover': 'linear-gradient(135deg, #9A7209 0%, #B8860B 100%)',
+        'gradient-animated': 'linear-gradient(270deg, #0a0a0a, #1a1200, #B8860B, #1a1200, #0a0a0a)',
       },
       boxShadow: {
-        'glass': '0 8px 32px 0 rgba(0, 29, 57, 0.08)',
-        'glass-lg': '0 12px 48px 0 rgba(0, 29, 57, 0.12)',
-        'ocean': '0 4px 20px 0 rgba(10, 65, 116, 0.15)',
+        'gold': '0 4px 20px 0 rgba(184, 134, 11, 0.15)',
+        'gold-lg': '0 8px 40px 0 rgba(184, 134, 11, 0.2)',
+        'gold-glow': '0 0 20px rgba(184, 134, 11, 0.3)',
+        'dark': '0 4px 20px 0 rgba(0, 0, 0, 0.3)',
+        'dark-lg': '0 8px 40px 0 rgba(0, 0, 0, 0.4)',
+        'card-dark': '0 2px 12px 0 rgba(0, 0, 0, 0.2)',
+        'card-light': '0 2px 12px 0 rgba(0, 0, 0, 0.06)',
+      },
+      animation: {
+        'gradient-shift': 'gradientShift 8s ease infinite',
+        'fade-in': 'fadeIn 0.3s ease-out',
+        'slide-up': 'slideUp 0.3s ease-out',
+        'glow-pulse': 'glowPulse 3s ease-in-out infinite',
+        'theme-switch': 'themeSwitch 0.5s ease-in-out',
+      },
+      keyframes: {
+        gradientShift: {
+          '0%, 100%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+        },
+        fadeIn: {
+          '0%': { opacity: '0' },
+          '100%': { opacity: '1' },
+        },
+        slideUp: {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+        glowPulse: {
+          '0%, 100%': { boxShadow: '0 0 5px rgba(184,134,11,0.2)' },
+          '50%': { boxShadow: '0 0 20px rgba(184,134,11,0.4)' },
+        },
+        themeSwitch: {
+          '0%': { transform: 'rotate(0deg) scale(1)' },
+          '50%': { transform: 'rotate(180deg) scale(0.8)' },
+          '100%': { transform: 'rotate(360deg) scale(1)' },
+        },
+      },
+      backgroundSize: {
+        '400': '400% 400%',
       },
     },
   },

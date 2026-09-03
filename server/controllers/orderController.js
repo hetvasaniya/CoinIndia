@@ -148,10 +148,16 @@ const updateOrderStatus = async (req, res) => {
     }
 
     // Rule: Once cancelled, order status permanently becomes Cancelled.
-    // It must NOT be possible to confirm, process, ship, or deliver that order afterward.
     if (order.status === 'cancelled') {
       return res.status(400).json({
         message: 'This order is permanently cancelled and cannot be updated to any other status.',
+      });
+    }
+
+    // Rule: Once delivered, order status is completed & locked permanently.
+    if (order.status === 'delivered') {
+      return res.status(400).json({
+        message: 'This order has been DELIVERED and completed. Delivered orders cannot be edited or modified.',
       });
     }
 
@@ -198,6 +204,10 @@ const cancelOrderInternal = async (req, res, order) => {
 
     if (order.status === 'cancelled') {
       return res.status(400).json({ message: 'Order is already cancelled' });
+    }
+
+    if (order.status === 'delivered') {
+      return res.status(400).json({ message: 'Delivered orders cannot be cancelled.' });
     }
 
     // 1. Mark status as cancelled
@@ -286,8 +296,16 @@ const processRefund = async (req, res) => {
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    if (order.status !== 'cancelled' && order.paymentStatus !== 'paid') {
-      return res.status(400).json({ message: 'Refunds can only be processed for cancelled or paid orders.' });
+    if (order.status !== 'cancelled') {
+      return res.status(400).json({ message: 'Refunds can only be processed for cancelled orders.' });
+    }
+
+    if (order.paymentStatus !== 'paid' && order.paymentStatus !== 'refunded') {
+      return res.status(400).json({ message: 'Only paid orders are eligible for refunds.' });
+    }
+
+    if (order.refund?.status === 'refunded' && refundStatus?.toLowerCase() === 'refunded') {
+      return res.status(400).json({ message: 'This refund has already been completed and processed.' });
     }
 
     if (!order.refund) {
@@ -298,9 +316,17 @@ const processRefund = async (req, res) => {
       };
     }
 
-    if (refundAmount !== undefined) {
-      order.refund.amount = Number(refundAmount);
+    const calcAmount = refundAmount !== undefined ? Number(refundAmount) : (order.refund.amount || order.totalAmount);
+
+    if (calcAmount <= 0) {
+      return res.status(400).json({ message: 'Refund amount must be greater than 0.' });
     }
+
+    if (calcAmount > order.totalAmount) {
+      return res.status(400).json({ message: `Refund amount cannot exceed total paid amount (₹${order.totalAmount}).` });
+    }
+
+    order.refund.amount = calcAmount;
     if (refundMethod) {
       order.refund.method = refundMethod;
     }
@@ -330,7 +356,7 @@ const processRefund = async (req, res) => {
           {
             $set: {
               status: 'refunded',
-              refundId: refundTransactionId || `REF-${Date.now()}`,
+              refundId: refundTransactionId || order.refund.transactionId || `REF-${Date.now()}`,
               refundAmount: order.refund.amount,
               refundNotes: refundNotes || 'Refund processed by administrator',
             },
@@ -344,7 +370,7 @@ const processRefund = async (req, res) => {
       status: order.status,
       updatedAt: new Date(),
       updatedBy: req.user._id,
-      note: `Refund updated: Status=${order.refund.status}, Method=${order.refund.method || 'N/A'}, Txn=${order.refund.transactionId || 'N/A'}`,
+      note: `Refund updated: Status=${order.refund.status}, Method=${order.refund.method || 'N/A'}, Amount=₹${order.refund.amount}, Txn=${order.refund.transactionId || 'N/A'}`,
     });
 
     const savedOrder = await order.save();
@@ -357,6 +383,97 @@ const processRefund = async (req, res) => {
     res.json({
       message: 'Refund updated successfully',
       order: populated,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getRefundableOrders = async (req, res) => {
+  try {
+    const { status, method, search, page = 1, limit = 100 } = req.query;
+
+    const query = {
+      status: 'cancelled',
+      paymentStatus: { $in: ['paid', 'refunded'] },
+    };
+
+    if (status && status !== 'all') {
+      query['refund.status'] = status.toLowerCase();
+    }
+
+    if (method && method !== 'all') {
+      query['refund.method'] = method;
+    }
+
+    if (search && search.trim()) {
+      const searchRegex = new RegExp(search.trim(), 'i');
+      query.$or = [
+        { orderNumber: searchRegex },
+        { razorpayPaymentId: searchRegex },
+        { razorpayOrderId: searchRegex },
+        { 'refund.transactionId': searchRegex },
+        { 'shippingAddress.phone': searchRegex },
+      ];
+    }
+
+    const total = await Order.countDocuments(query);
+    const orders = await Order.find(query)
+      .populate('user', 'name email phone')
+      .populate('items.coin', 'name images sellingPrice quantity isAvailable denomination era material mintMark sku')
+      .populate('cancelledBy.user', 'name email')
+      .populate('refund.processedBy', 'name email')
+      .sort({ createdAt: -1 })
+      .skip((Number(page) - 1) * Number(limit))
+      .limit(Number(limit));
+
+    res.json({
+      orders,
+      total,
+      page: Number(page),
+      pages: Math.ceil(total / Number(limit)) || 1,
+    });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+const getRefundStats = async (req, res) => {
+  try {
+    const baseQuery = {
+      status: 'cancelled',
+      paymentStatus: { $in: ['paid', 'refunded'] },
+    };
+
+    const pendingResult = await Order.aggregate([
+      { $match: { ...baseQuery, 'refund.status': 'pending' } },
+      { $group: { _id: null, count: { $sum: 1 }, total: { $sum: { $ifNull: ['$refund.amount', '$totalAmount'] } } } },
+    ]);
+
+    const processingResult = await Order.aggregate([
+      { $match: { ...baseQuery, 'refund.status': 'processing' } },
+      { $group: { _id: null, count: { $sum: 1 }, total: { $sum: { $ifNull: ['$refund.amount', '$totalAmount'] } } } },
+    ]);
+
+    const completedResult = await Order.aggregate([
+      { $match: { ...baseQuery, 'refund.status': 'refunded' } },
+      { $group: { _id: null, count: { $sum: 1 }, total: { $sum: '$refund.amount' } } },
+    ]);
+
+    const failedResult = await Order.aggregate([
+      { $match: { ...baseQuery, 'refund.status': 'failed' } },
+      { $group: { _id: null, count: { $sum: 1 }, total: { $sum: { $ifNull: ['$refund.amount', '$totalAmount'] } } } },
+    ]);
+
+    res.json({
+      pendingCount: pendingResult[0]?.count || 0,
+      pendingTotal: pendingResult[0]?.total || 0,
+      processingCount: processingResult[0]?.count || 0,
+      processingTotal: processingResult[0]?.total || 0,
+      completedCount: completedResult[0]?.count || 0,
+      completedTotal: completedResult[0]?.total || 0,
+      failedCount: failedResult[0]?.count || 0,
+      failedTotal: failedResult[0]?.total || 0,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -425,4 +542,6 @@ module.exports = {
   cancelOrder,
   processRefund,
   getOrderStats,
+  getRefundableOrders,
+  getRefundStats,
 };

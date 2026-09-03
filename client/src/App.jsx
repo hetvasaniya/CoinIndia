@@ -3,12 +3,15 @@ import PublicLayout from './components/layout/PublicLayout';
 import AdminLayout from './components/layout/AdminLayout';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import AdminRoute from './components/common/AdminRoute';
+import ScrollToTop from './components/common/ScrollToTop';
 
 // Public Pages
 import Home from './pages/public/Home';
 import Explore from './pages/public/Explore';
 import CoinDetail from './pages/public/CoinDetail';
 import About from './pages/public/About';
+import HelpSupport from './pages/public/HelpSupport';
+import Reviews from './pages/public/Reviews';
 
 // Auth Pages
 import Login from './pages/auth/Login';
@@ -33,18 +36,23 @@ import CategoryManager from './pages/admin/CategoryManager';
 import CountryManager from './pages/admin/CountryManager';
 import MintManager from './pages/admin/MintManager';
 import OrderManager from './pages/admin/OrderManager';
+import RefundManager from './pages/admin/RefundManager';
 import UserManager from './pages/admin/UserManager';
 import Inventory from './pages/admin/Inventory';
 import Settings from './pages/admin/Settings';
 
 function App() {
   return (
-    <Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
       <Route element={<PublicLayout />}>
         <Route path="/" element={<Home />} />
         <Route path="/explore" element={<Explore />} />
         <Route path="/coins/:slug" element={<CoinDetail />} />
         <Route path="/about" element={<About />} />
+        <Route path="/reviews" element={<Reviews />} />
+        <Route path="/support" element={<HelpSupport />} />
         
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -72,12 +80,14 @@ function App() {
           <Route path="/admin/countries" element={<CountryManager />} />
           <Route path="/admin/mints" element={<MintManager />} />
           <Route path="/admin/orders" element={<OrderManager />} />
+          <Route path="/admin/refunds" element={<RefundManager />} />
           <Route path="/admin/users" element={<UserManager />} />
           <Route path="/admin/inventory" element={<Inventory />} />
           <Route path="/admin/settings" element={<Settings />} />
         </Route>
       </Route>
     </Routes>
+    </>
   );
 }
 

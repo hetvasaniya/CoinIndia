@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import authService from '../../services/authService';
+import { useTheme } from '../../context/ThemeContext';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import toast from 'react-hot-toast';
@@ -8,6 +9,7 @@ import toast from 'react-hot-toast';
 const ResetPassword = () => {
   const { token } = useParams();
   const navigate = useNavigate();
+  const { isDark } = useTheme();
   const [formData, setFormData] = useState({ password: '', confirmPassword: '' });
   const [loading, setLoading] = useState(false);
 
@@ -31,35 +33,21 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FAFAF7] py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full bg-white p-8 border border-gray-200 rounded-sm shadow-sm">
+    <div className={`min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors ${
+      isDark ? 'bg-dark-900' : 'bg-[#FAF8F5]'
+    }`}>
+      <div className={`max-w-md w-full p-8 border rounded-xl shadow-xl ${
+        isDark ? 'bg-dark-800 border-dark-700' : 'bg-white border-gray-200'
+      }`}>
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-serif text-[#1a1a1a]">Set New Password</h2>
-          <p className="mt-2 text-sm text-gray-600">Please enter your new password below</p>
+          <h2 className={`text-2xl font-serif ${isDark ? 'text-white' : 'text-gray-900'}`}>Set New Password</h2>
+          <p className={`mt-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Please enter your new password below</p>
         </div>
         
         <form className="space-y-6" onSubmit={handleSubmit}>
-          <Input
-            label="New Password"
-            type="password"
-            required
-            placeholder="Enter new password (min 6 characters)"
-            value={formData.password}
-            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-          />
-          
-          <Input
-            label="Confirm New Password"
-            type="password"
-            required
-            placeholder="Re-enter your new password"
-            value={formData.confirmPassword}
-            onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-          />
-          
-          <Button type="submit" className="w-full" isLoading={loading}>
-            Reset Password
-          </Button>
+          <Input label="New Password" type="password" required placeholder="Enter new password (min 6 characters)" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+          <Input label="Confirm New Password" type="password" required placeholder="Re-enter your new password" value={formData.confirmPassword} onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })} />
+          <Button type="submit" className="w-full shadow-gold" isLoading={loading}>Reset Password</Button>
         </form>
       </div>
     </div>

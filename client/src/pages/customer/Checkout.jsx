@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import orderService from '../../services/orderService';
 import paymentService from '../../services/paymentService';
 import authService from '../../services/authService';
@@ -26,15 +27,11 @@ const loadRazorpayScript = () => {
 const Checkout = () => {
   const { cartItems, clearCart } = useCart();
   const { user, checkUser } = useAuth();
+  const { isDark } = useTheme();
   const navigate = useNavigate();
 
   const [shippingAddress, setShippingAddress] = useState({
-    street: '',
-    city: '',
-    state: '',
-    zipCode: '',
-    country: 'India',
-    phone: ''
+    street: '', city: '', state: '', zipCode: '', country: 'India', phone: ''
   });
 
   const [paymentMethod, setPaymentMethod] = useState('demo');
@@ -88,7 +85,6 @@ const Checkout = () => {
         }).then(() => checkUser()).catch(() => {});
       }
 
-      // 1. If Demo / Mock Payment is selected (No Razorpay keys needed)
       if (paymentMethod === 'demo') {
         const demoRes = await paymentService.demoCheckout({
           items: formattedItems,
@@ -101,7 +97,6 @@ const Checkout = () => {
         return;
       }
 
-      // 2. If Razorpay Online Payment is selected
       const isLoaded = await loadRazorpayScript();
       if (!isLoaded) {
         toast.error('Razorpay SDK failed to load. Are you online?');
@@ -144,153 +139,101 @@ const Checkout = () => {
         prefill: {
           name: user?.name || '',
           email: user?.email || '',
-          contact: shippingAddress.phone
+          contact: shippingAddress.phone || '',
         },
         theme: {
-          color: '#B8860B'
-        }
+          color: '#B8860B',
+        },
       };
 
-      const rzp1 = new window.Razorpay(options);
-      rzp1.on('payment.failed', function (response) {
-        toast.error(response.error?.description || 'Payment failed');
-      });
-      rzp1.open();
-
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Checkout failed');
+      toast.error(error.response?.data?.message || 'Failed to initialize checkout');
     } finally {
       setLoading(false);
     }
   };
 
-  const hasSavedAddress = Boolean(user?.addresses?.[0]?.street);
+  const cardBg = isDark ? 'bg-dark-800 border-dark-700' : 'bg-white border-gray-200';
+  const labelClass = `block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <h1 className="text-3xl font-serif text-[#1a1a1a] mb-8">Checkout</h1>
-      
-      <div className="flex flex-col lg:flex-row gap-12">
-        <div className="flex-1 space-y-8">
-          <div className="bg-white p-6 border border-gray-200 rounded-sm">
-            <div className="flex justify-between items-center mb-6 border-b pb-2">
-              <h2 className="text-xl font-serif text-[#1a1a1a]">Shipping Address</h2>
-              {hasSavedAddress && (
-                <span className="text-xs bg-amber-50 text-[#B8860B] border border-amber-200 px-2.5 py-1 rounded">
-                  Pre-filled from Profile
-                </span>
-              )}
+    <div className={`min-h-screen py-12 transition-colors ${isDark ? 'bg-dark-900 text-gray-100' : 'bg-[#FAF8F5] text-gray-900'}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 className={`text-3xl font-serif mb-8 ${isDark ? 'text-white' : 'text-gray-900'}`}>Checkout</h1>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          <div className="lg:col-span-2 space-y-8">
+            {/* Shipping Address */}
+            <div className={`border rounded-xl p-6 shadow-sm ${cardBg}`}>
+              <h2 className={`text-xl font-serif mb-6 border-b pb-3 ${isDark ? 'text-white border-dark-700' : 'text-gray-900 border-gray-200'}`}>
+                1. Delivery Shipping Address
+              </h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2">
+                  <Input label="Street Address" required placeholder="House/Flat No., Building Name, Street" value={shippingAddress.street} onChange={(e) => setShippingAddress({ ...shippingAddress, street: e.target.value })} />
+                </div>
+                <Input label="City" required placeholder="e.g., Mumbai, New Delhi" value={shippingAddress.city} onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })} />
+                <Input label="State" required placeholder="e.g., Maharashtra" value={shippingAddress.state} onChange={(e) => setShippingAddress({ ...shippingAddress, state: e.target.value })} />
+                <Input label="PIN / Zip Code" required placeholder="e.g., 400001" value={shippingAddress.zipCode} onChange={(e) => setShippingAddress({ ...shippingAddress, zipCode: e.target.value })} />
+                <Input label="Phone Number" required placeholder="+91 98765 43210" value={shippingAddress.phone} onChange={(e) => setShippingAddress({ ...shippingAddress, phone: e.target.value })} />
+              </div>
+
+              <div className="mt-4 flex items-center">
+                <input id="saveProfile" type="checkbox" checked={saveToProfile} onChange={(e) => setSaveToProfile(e.target.checked)} className="h-4 w-4 text-gold-500 focus:ring-gold-500 border-gray-300 rounded accent-gold-500" />
+                <label htmlFor="saveProfile" className={`ml-2 text-xs ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                  Save this address to my profile for future orders
+                </label>
+              </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <Input
-                label="Street Address"
-                required
-                className="md:col-span-2"
-                placeholder="e.g., Flat 402, Heritage Heights, MG Road"
-                value={shippingAddress.street}
-                onChange={(e) => setShippingAddress({ ...shippingAddress, street: e.target.value })}
-              />
-              <Input
-                label="City"
-                required
-                placeholder="e.g., Mumbai or New Delhi"
-                value={shippingAddress.city}
-                onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
-              />
-              <Input
-                label="State"
-                required
-                placeholder="e.g., Maharashtra"
-                value={shippingAddress.state}
-                onChange={(e) => setShippingAddress({ ...shippingAddress, state: e.target.value })}
-              />
-              <Input
-                label="PIN Code"
-                required
-                placeholder="e.g., 400001"
-                value={shippingAddress.zipCode}
-                onChange={(e) => setShippingAddress({ ...shippingAddress, zipCode: e.target.value })}
-              />
-              <Input
-                label="Phone Number"
-                required
-                placeholder="e.g., +91 98765 43210"
-                value={shippingAddress.phone}
-                onChange={(e) => setShippingAddress({ ...shippingAddress, phone: e.target.value })}
-              />
-            </div>
+            {/* Payment Method */}
+            <div className={`border rounded-xl p-6 shadow-sm ${cardBg}`}>
+              <h2 className={`text-xl font-serif mb-6 border-b pb-3 ${isDark ? 'text-white border-dark-700' : 'text-gray-900 border-gray-200'}`}>
+                2. Select Payment Method
+              </h2>
 
-            <div className="mt-4 pt-4 border-t border-gray-100 flex items-center">
-              <input
-                id="saveToProfile"
-                type="checkbox"
-                checked={saveToProfile}
-                onChange={(e) => setSaveToProfile(e.target.checked)}
-                className="h-4 w-4 text-[#B8860B] focus:ring-[#B8860B] border-gray-300 rounded cursor-pointer"
-              />
-              <label htmlFor="saveToProfile" className="ml-2 block text-sm text-gray-700 cursor-pointer">
-                Save this address in profile for future orders
-              </label>
-            </div>
-          </div>
-
-          {/* Payment Method Selector */}
-          <div className="bg-white p-6 border border-gray-200 rounded-sm">
-            <h2 className="text-xl font-serif text-[#1a1a1a] mb-4 border-b pb-2">Payment Method</h2>
-            <div className="space-y-3">
-              <label 
-                className={`flex items-start p-4 border rounded-sm cursor-pointer transition-colors ${
-                  paymentMethod === 'demo' ? 'border-[#B8860B] bg-amber-50/40' : 'border-gray-200 hover:bg-gray-50'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="demo"
-                  checked={paymentMethod === 'demo'}
-                  onChange={() => setPaymentMethod('demo')}
-                  className="mt-1 h-4 w-4 text-[#B8860B] focus:ring-[#B8860B] border-gray-300"
-                />
-                <div className="ml-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-semibold text-gray-900">Demo / Test Payment (Instant)</span>
-                    <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded font-medium">
-                      No Razorpay Keys Needed
+              <div className="space-y-4">
+                <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${
+                  paymentMethod === 'demo'
+                    ? 'border-gold-500 bg-gold-500/10'
+                    : isDark ? 'border-dark-700 bg-dark-700/50' : 'border-gray-200 bg-gray-50'
+                }`}>
+                  <input type="radio" name="payment" value="demo" checked={paymentMethod === 'demo'} onChange={() => setPaymentMethod('demo')} className="w-4 h-4 text-gold-500 accent-gold-500" />
+                  <div className="ml-3">
+                    <span className={`block text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      Test / Instant Demo Payment (Recommended for Testing)
+                    </span>
+                    <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                      Instantly completes order without requiring credit card or UPI credentials.
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Simulate an instant successful payment to test full order processing and dashboards.
-                  </p>
-                </div>
-              </label>
+                </label>
 
-              <label 
-                className={`flex items-start p-4 border rounded-sm cursor-pointer transition-colors ${
-                  paymentMethod === 'razorpay' ? 'border-[#B8860B] bg-amber-50/40' : 'border-gray-200 hover:bg-gray-50'
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="razorpay"
-                  checked={paymentMethod === 'razorpay'}
-                  onChange={() => setPaymentMethod('razorpay')}
-                  className="mt-1 h-4 w-4 text-[#B8860B] focus:ring-[#B8860B] border-gray-300"
-                />
-                <div className="ml-3">
-                  <span className="text-sm font-semibold text-gray-900">Online Payment (Razorpay Gateway)</span>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Pay via UPI, Cards, Netbanking, or Wallets using your Razorpay account keys.
-                  </p>
-                </div>
-              </label>
+                <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition-all ${
+                  paymentMethod === 'razorpay'
+                    ? 'border-gold-500 bg-gold-500/10'
+                    : isDark ? 'border-dark-700 bg-dark-700/50' : 'border-gray-200 bg-gray-50'
+                }`}>
+                  <input type="radio" name="payment" value="razorpay" checked={paymentMethod === 'razorpay'} onChange={() => setPaymentMethod('razorpay')} className="w-4 h-4 text-gold-500 accent-gold-500" />
+                  <div className="ml-3">
+                    <span className={`block text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                      Razorpay Online Payment (UPI, Cards, NetBanking, Wallets)
+                    </span>
+                    <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                      Secure payment gateway integration.
+                    </span>
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
-        </div>
-        
-        <div className="w-full lg:w-96 flex-shrink-0">
-          <CartSummary isCheckoutPage={true} checkoutHandler={handleCheckout} loading={loading} />
+
+          <div>
+            <CartSummary isCheckoutPage checkoutHandler={handleCheckout} loading={loading} />
+          </div>
         </div>
       </div>
     </div>
