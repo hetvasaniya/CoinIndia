@@ -28,6 +28,9 @@ export const AuthProvider = ({ children }) => {
   const login = async (credentials) => {
     try {
       const data = await authService.login(credentials);
+      if (data?.token) {
+        localStorage.setItem('token', data.token);
+      }
       setUser(data);
       toast.success('Logged in successfully');
       return data;
@@ -41,6 +44,9 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       const data = await authService.register(userData);
+      if (data?.token) {
+        localStorage.setItem('token', data.token);
+      }
       setUser(data);
       toast.success('Account registered successfully');
       return data;
@@ -54,10 +60,12 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     try {
       await authService.logout();
+    } catch (error) {
+      // ignore
+    } finally {
+      localStorage.removeItem('token');
       setUser(null);
       toast.success('Logged out successfully');
-    } catch (error) {
-      toast.error('Logout failed');
     }
   };
 

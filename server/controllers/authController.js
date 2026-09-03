@@ -22,7 +22,7 @@ const register = async (req, res) => {
     });
 
     if (user) {
-      generateToken(res, user._id);
+      const token = generateToken(res, user._id);
       
       // Send welcome email asynchronously without blocking registration response
       sendEmail({
@@ -38,6 +38,7 @@ const register = async (req, res) => {
         role: user.role,
         phone: user.phone,
         addresses: user.addresses,
+        token,
       });
     } else {
       res.status(400).json({ message: 'Invalid user registration data' });
@@ -56,7 +57,7 @@ const login = async (req, res) => {
     const user = await User.findOne({ email: normalizedEmail });
 
     if (user && (await user.matchPassword(password))) {
-      generateToken(res, user._id);
+      const token = generateToken(res, user._id);
 
       res.json({
         _id: user._id,
@@ -65,6 +66,7 @@ const login = async (req, res) => {
         role: user.role,
         phone: user.phone,
         addresses: user.addresses,
+        token,
       });
     } else {
       res.status(401).json({ message: 'Invalid email or password' });
@@ -76,8 +78,13 @@ const login = async (req, res) => {
 };
 
 const logout = (req, res) => {
+  const isProduction = process.env.NODE_ENV === 'production' ||
+    (process.env.FRONTEND_URL && process.env.FRONTEND_URL.startsWith('https'));
+
   res.cookie('jwt', '', {
     httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? 'none' : 'lax',
     expires: new Date(0),
   });
   res.status(200).json({ message: 'Logged out successfully' });

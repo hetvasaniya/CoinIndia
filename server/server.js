@@ -13,6 +13,9 @@ connectDB();
 
 const app = express();
 
+// Enable trust proxy for reverse proxies like Render
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -21,19 +24,31 @@ app.use(cookieParser());
 // CORS configuration
 const allowedOrigins = [
   process.env.FRONTEND_URL,
-  'http://localhost:5173'
+  'http://localhost:5173',
+  'http://localhost:3000',
+  'http://127.0.0.1:5173',
 ].filter(Boolean);
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(null, true); // Permissive in development
-    }
-  },
-  credentials: true,
-}));
+const normalizedOrigins = allowedOrigins.map((url) => url.replace(/\/+$/, ''));
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      const cleanOrigin = origin.replace(/\/+$/, '');
+      if (
+        normalizedOrigins.includes(cleanOrigin) ||
+        cleanOrigin.endsWith('.vercel.app') ||
+        process.env.NODE_ENV !== 'production'
+      ) {
+        callback(null, true);
+      } else {
+        callback(null, true);
+      }
+    },
+    credentials: true,
+  })
+);
 
 // Route files
 const authRoutes = require('./routes/authRoutes');
