@@ -4,8 +4,9 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
 const { errorHandler, notFound } = require('./middleware/errorHandler');
+const path = require('path');
 
-// Load env vars
+// Load environment variables
 dotenv.config();
 
 // Connect to database
@@ -13,44 +14,54 @@ connectDB();
 
 const app = express();
 
-// Enable trust proxy for reverse proxies like Render
+// Required for Render / reverse proxy
 app.set('trust proxy', 1);
 
+// ================================
 // Middleware
+// ================================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-// CORS configuration
-const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  'http://localhost:5173',
-  'http://localhost:3000',
-  'http://127.0.0.1:5173',
-].filter(Boolean);
+// ================================
+// CORS Configuration
+// ================================
 
-const normalizedOrigins = allowedOrigins.map((url) => url.replace(/\/+$/, ''));
+// Only these two origins are allowed
+const allowedOrigins = [
+  'http://localhost:5173',
+  process.env.FRONTEND_URL,
+].filter(Boolean);
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      const cleanOrigin = origin.replace(/\/+$/, '');
-      if (
-        normalizedOrigins.includes(cleanOrigin) ||
-        cleanOrigin.endsWith('.vercel.app') ||
-        process.env.NODE_ENV !== 'production'
-      ) {
-        callback(null, true);
-      } else {
-        callback(null, true);
+      // Allow requests without Origin header
+      // (Postman, server-to-server requests, etc.)
+      if (!origin) {
+        return callback(null, true);
       }
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      // Block every other origin
+      return callback(
+        new Error(`CORS policy: Origin ${origin} is not allowed`)
+      );
     },
+
+    // Required for cookies / authentication
     credentials: true,
   })
 );
 
-// Route files
+// ================================
+// Routes
+// ================================
+
 const authRoutes = require('./routes/authRoutes');
 const coinRoutes = require('./routes/coinRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
@@ -64,12 +75,14 @@ const adminRoutes = require('./routes/adminRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const supportRoutes = require('./routes/supportRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
-const path = require('path');
 
-// Static uploads folder for policy documents
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Static uploads
+app.use(
+  '/uploads',
+  express.static(path.join(__dirname, 'uploads'))
+);
 
-// Mount routes
+// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/coins', coinRoutes);
 app.use('/api/categories', categoryRoutes);
@@ -84,12 +97,23 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/reviews', reviewRoutes);
 
-// Error Handling Middleware
+// ================================
+// Error Handling
+// ================================
 app.use(notFound);
 app.use(errorHandler);
 
+// ================================
+// Start Server
+// ================================
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+  console.log(
+    `Server running in ${
+      process.env.NODE_ENV || 'development'
+    } mode on port ${PORT}`
+  );
+
+  console.log('Allowed CORS origins:', allowedOrigins);
 });
