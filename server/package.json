@@ -1,7 +1,7 @@
 {
   "name": "coinindia-server",
   "version": "1.0.0",
-  "description": "Coin India Backend API",
+  "description": "Coinomart Backend API",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

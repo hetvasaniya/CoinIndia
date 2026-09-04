@@ -7,6 +7,7 @@ import {
 } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { STATIC_IMAGES } from '../../data/staticImages';
 
 const AdminSidebar = () => {
   const location = useLocation();
@@ -72,21 +73,24 @@ const AdminSidebar = () => {
           isExpanded ? 'justify-between' : 'justify-center flex-col gap-2'
         }`}>
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-gold-500/50 shadow-md bg-dark-800 p-0.5 transition-transform group-hover:scale-105 flex-shrink-0">
-              <img 
-                src="https://res.cloudinary.com/elitehomes/image/upload/v1788148596/nedeqh3gfpeilb1sgiv7.png" 
-                alt="CoinIndia Logo" 
-                className="w-full h-full object-cover rounded-full" 
-              />
-            </div>
-            {isExpanded && (
-              <div className="flex flex-col overflow-hidden whitespace-nowrap">
-                <span className="text-base font-serif font-bold text-white tracking-wider">
-                  Coin<span className="text-gold-500">India</span>
-                </span>
-                <span className="text-[9px] text-gold-500/80 uppercase tracking-widest font-semibold">
+            {isExpanded ? (
+              <div className="flex flex-col">
+                <img 
+                  src={STATIC_IMAGES.logo.main} 
+                  alt="Coinomart" 
+                  className="h-9 w-auto max-w-[150px] object-contain rounded transition-transform group-hover:scale-105" 
+                />
+                <span className="text-[9px] text-gold-500/80 uppercase tracking-widest font-semibold mt-1 pl-1">
                   Admin Panel
                 </span>
+              </div>
+            ) : (
+              <div className="w-10 h-10 rounded-full overflow-hidden border border-gold-500/50 shadow-md bg-dark-800 p-0.5 transition-transform group-hover:scale-105 flex-shrink-0">
+                <img 
+                  src={STATIC_IMAGES.logo.main} 
+                  alt="Coinomart" 
+                  className="w-full h-full object-cover rounded-full" 
+                />
               </div>
             )}
           </Link>

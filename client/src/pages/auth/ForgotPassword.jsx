@@ -5,6 +5,7 @@ import { useTheme } from '../../context/ThemeContext';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import toast from 'react-hot-toast';
+import { STATIC_IMAGES } from '../../data/staticImages';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
@@ -34,11 +35,14 @@ const ForgotPassword = () => {
         isDark ? 'bg-dark-800 border-dark-700' : 'bg-white border-gray-200'
       }`}>
         <div className="text-center mb-8">
-          <Link to="/" className="text-3xl font-serif tracking-wider inline-block mb-4">
-            <span className={isDark ? 'text-white' : 'text-gray-900'}>Coin</span>
-            <span className="text-gold-500">India</span>
+          <Link to="/" className="inline-flex flex-col items-center mb-4 group">
+            <img 
+              src={STATIC_IMAGES.logo.main} 
+              alt="Coinomart" 
+              className="h-16 w-auto max-w-[200px] object-contain rounded transition-transform group-hover:scale-105" 
+            />
           </Link>
-          <h2 className={`text-2xl font-serif ${isDark ? 'text-white' : 'text-gray-900'}`}>Reset Password</h2>
+          <h2 className={`text-2xl font-serif mt-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>Reset Password</h2>
           <p className={`mt-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Enter your email to receive a reset link</p>
         </div>
         

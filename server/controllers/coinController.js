@@ -165,9 +165,15 @@ const deleteCoin = async (req, res) => {
 
 const updateQuantity = async (req, res) => {
   try {
+    const rawQty = req.body.quantity;
+    const qty = parseInt(rawQty, 10);
+    if (isNaN(qty) || qty < 0) {
+      return res.status(400).json({ message: 'A valid non-negative quantity is required' });
+    }
     const coin = await Coin.findById(req.params.id);
     if (coin) {
-      coin.quantity = req.body.quantity;
+      coin.quantity = qty;
+      coin.isAvailable = qty > 0;
       const updatedCoin = await coin.save();
       res.json(updatedCoin);
     } else {

@@ -116,7 +116,7 @@ const Checkout = () => {
         key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_YourKeyHere',
         amount: Math.round(payableAmount * 100).toString(),
         currency: 'INR',
-        name: 'Coin India',
+        name: 'Coinomart',
         description: 'Numismatic Artifacts',
         order_id: razorpayOrderId,
         handler: async (response) => {

@@ -1,4 +1,4 @@
-# Coin India
+# Coinomart
 
 Digital Marketplace for Old, Rare and Collectible Coins & Currency
 

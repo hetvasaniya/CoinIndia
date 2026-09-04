@@ -102,7 +102,7 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             <div>
               <span className="text-xs uppercase tracking-widest text-gold-500 font-semibold mb-2 block">Trust & Integrity</span>
-              <h2 className="text-3xl font-serif mb-6 text-gold-400">The CoinIndia Guarantee</h2>
+              <h2 className="text-3xl font-serif mb-6 text-gold-400">The Coinomart Guarantee</h2>
               <p className="text-gray-300 mb-6 font-light leading-relaxed">
                 Every artifact in our collection undergoes rigorous verification by expert numismatists. 
                 We guarantee the authenticity of every coin we sell, providing a Certificate of Authenticity 

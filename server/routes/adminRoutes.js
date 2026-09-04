@@ -92,8 +92,13 @@ router.route('/coins/:id')
   .put(upload.array('images', 5), updateCoin)
   .delete(deleteCoin);
 
-router.put('/coins/:id/quantity', updateQuantity);
-router.put('/coins/:id/featured', toggleFeatured);
+router.route('/coins/:id/quantity')
+  .put(updateQuantity)
+  .patch(updateQuantity);
+
+router.route('/coins/:id/featured')
+  .put(toggleFeatured)
+  .patch(toggleFeatured);
 
 // Admin Order & Payment Routes
 router.get('/orders/stats', getOrderStats);

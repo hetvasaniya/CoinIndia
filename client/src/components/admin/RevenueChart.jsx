@@ -1,8 +1,8 @@
 import { useTheme } from '../../context/ThemeContext';
 
-const RevenueChart = ({ data }) => {
+const RevenueChart = ({ data = [] }) => {
   const { isDark } = useTheme();
-  const maxVal = Math.max(...data.map(d => d.value));
+  const maxVal = data.length > 0 ? Math.max(...data.map(d => d.value || 0)) : 100;
 
   return (
     <div className={`border rounded-lg p-6 shadow-sm ${

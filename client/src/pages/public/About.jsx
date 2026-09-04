@@ -38,7 +38,7 @@ const About = () => {
           <div className={`prose prose-lg leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
             <h2 className={`text-3xl font-serif mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>Our Mission</h2>
             <p className="mb-4">
-              Coin India was founded with a singular mission: to preserve and share the rich numismatic heritage of the Indian subcontinent. 
+              Coinomart was founded with a singular mission: to preserve and share the rich numismatic heritage of the Indian subcontinent. 
               For centuries, coins have been more than just currency; they are tangible pieces of history, 
               bearing the marks of dynasties, trade routes, metallurgical triumphs, and cultural exchanges.
             </p>
@@ -54,7 +54,7 @@ const About = () => {
               <img 
                 src={STATIC_IMAGES.about.curatorAtWork} 
                 alt="Expert numismatist authenticating ancient coin" 
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover" 
               />
             </div>
             <div className={`absolute -bottom-6 -left-6 border p-4 rounded-lg shadow-xl max-w-xs hidden sm:block ${
@@ -93,7 +93,7 @@ const About = () => {
             "Numismatics is not just the study of coins; it is the study of history written in metal."
           </p>
           <span className="text-xs uppercase tracking-widest text-gold-500 font-semibold">
-            — CoinIndia Curatorial Board
+            — Coinomart Curatorial Board
           </span>
         </div>
       </div>

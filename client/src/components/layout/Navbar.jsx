@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
 import { useTheme } from '../../context/ThemeContext';
+import { STATIC_IMAGES } from '../../data/staticImages';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,18 +22,12 @@ const Navbar = () => {
         <div className="flex justify-between h-16 items-center">
           {/* Logo */}
           <div className="flex-shrink-0 flex items-center">
-            <Link to="/" className="flex items-center space-x-3 group">
-              <div className="w-10 h-10 rounded-full overflow-hidden border border-gold-500/40 shadow-sm flex items-center justify-center bg-dark-800/50 transition-transform group-hover:scale-105">
-                <img 
-                  src="https://res.cloudinary.com/elitehomes/image/upload/v1788148596/nedeqh3gfpeilb1sgiv7.png" 
-                  alt="CoinIndia Logo" 
-                  className="w-full h-full object-cover rounded-full" 
-                />
-              </div>
-              <span className="font-serif text-xl font-bold tracking-wider">
-                <span className={isDark ? 'text-white' : 'text-gray-900'}>Coin</span>
-                <span className="text-gold-500">India</span>
-              </span>
+            <Link to="/" className="flex items-center group py-1">
+              <img 
+                src={STATIC_IMAGES.logo.main} 
+                alt="Coinomart" 
+                className="h-10 sm:h-11 w-auto max-w-[170px] object-contain rounded transition-transform group-hover:scale-105" 
+              />
             </Link>
           </div>
 

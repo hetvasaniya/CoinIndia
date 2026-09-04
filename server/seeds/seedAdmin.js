@@ -9,7 +9,7 @@ connectDB();
 
 const seedAdmin = async () => {
   try {
-    const adminEmail = process.env.ADMIN_EMAIL || 'admin@coinindia.com';
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@coinomart.com';
     const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
 
     const existingAdmin = await User.findOne({ email: adminEmail });

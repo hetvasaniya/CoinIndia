@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useTheme } from '../../context/ThemeContext';
+import { STATIC_IMAGES } from '../../data/staticImages';
 
 const Footer = () => {
   const { isDark } = useTheme();
@@ -13,17 +14,12 @@ const Footer = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
           <div className="col-span-1 md:col-span-2">
-            <Link to="/" className="mb-4 flex items-center space-x-3 group">
-              <div className="w-10 h-10 rounded-full overflow-hidden border border-gold-500/40 shadow-sm bg-dark-800 transition-transform group-hover:scale-105">
-                <img 
-                  src="https://res.cloudinary.com/elitehomes/image/upload/v1788148596/nedeqh3gfpeilb1sgiv7.png" 
-                  alt="CoinIndia Logo" 
-                  className="w-full h-full object-cover rounded-full" 
-                />
-              </div>
-              <span className="text-2xl font-serif text-white tracking-wider font-bold">
-                Coin<span className="text-gold-500">India</span>
-              </span>
+            <Link to="/" className="mb-4 inline-flex items-center group">
+              <img 
+                src={STATIC_IMAGES.logo.main} 
+                alt="Coinomart" 
+                className="h-12 w-auto max-w-[200px] object-contain rounded transition-transform group-hover:scale-105" 
+              />
             </Link>
             <p className="text-gray-400 max-w-sm mt-4 text-sm leading-relaxed">
               Dedicated to the preservation and curation of India's rich numismatic heritage. Every artifact tells a story of empires, trade, and culture.
@@ -53,7 +49,7 @@ const Footer = () => {
         
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-gray-500 text-sm">
-            &copy; {new Date().getFullYear()} Coin India. All rights reserved.
+            &copy; {new Date().getFullYear()} Coinomart. All rights reserved.
           </p>
           <div className="mt-4 md:mt-0 flex space-x-6 items-center">
             <span className="text-gray-500 text-sm">Newsletter</span>

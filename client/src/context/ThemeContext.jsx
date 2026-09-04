@@ -10,7 +10,7 @@ export const useTheme = () => {
 
 export const ThemeProvider = ({ children }) => {
   const [theme, setTheme] = useState(() => {
-    const saved = localStorage.getItem('coinindia-theme');
+    const saved = localStorage.getItem('coinomart-theme') || localStorage.getItem('coinindia-theme');
     if (saved) return saved;
     if (window.matchMedia?.('(prefers-color-scheme: dark)').matches) return 'dark';
     return 'dark'; // Default to dark for premium feel
@@ -20,7 +20,7 @@ export const ThemeProvider = ({ children }) => {
     const root = document.documentElement;
     root.classList.remove('light', 'dark');
     root.classList.add(theme);
-    localStorage.setItem('coinindia-theme', theme);
+    localStorage.setItem('coinomart-theme', theme);
     
     // Update meta theme-color
     const meta = document.querySelector('meta[name="theme-color"]');
@@ -33,7 +33,7 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleChange = (e) => {
-      const saved = localStorage.getItem('coinindia-theme');
+      const saved = localStorage.getItem('coinomart-theme') || localStorage.getItem('coinindia-theme');
       if (!saved) {
         setTheme(e.matches ? 'dark' : 'light');
       }

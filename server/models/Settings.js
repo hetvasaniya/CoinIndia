@@ -12,7 +12,7 @@ const settingsSchema = new mongoose.Schema({
   supportEmail: {
     type: String,
     required: true,
-    default: 'support@coinindia.com',
+    default: 'support@coinomart.com',
     trim: true,
     lowercase: true
   },

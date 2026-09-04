@@ -15,6 +15,7 @@ import {
   FiDollarSign, FiBox, FiTruck, FiCheckCircle, FiClock, FiAlertCircle,
   FiUser, FiMapPin, FiCreditCard, FiPackage, FiArrowRight, FiShield, FiTag, FiLock
 } from 'react-icons/fi';
+import { STATIC_IMAGES } from '../../data/staticImages';
 
 const OrderManager = () => {
   const { isDark } = useTheme();
@@ -237,22 +238,28 @@ const OrderManager = () => {
     shipped: { label: 'Mark Delivered', next: 'delivered', color: 'bg-green-600 hover:bg-green-700' },
   };
 
+  const cardBg = isDark ? 'bg-dark-800 border-dark-700' : 'bg-white border-gray-200';
+  const headerBg = isDark ? 'bg-dark-700/60' : 'bg-[#FAFAF7]';
+  const rowHover = isDark ? 'hover:bg-dark-700/50' : 'hover:bg-gray-50';
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-serif text-[#1a1a1a]">Order Management & Fulfillment</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className={`text-2xl font-serif font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Order Management & Fulfillment</h1>
+          <p className={`text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
             Track orders, manage workflow lifecycle, process refunds, and pack shipments.
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <div className="bg-gray-100 p-1 rounded-lg flex text-sm">
+          <div className={`p-1 rounded-lg flex text-sm border ${isDark ? 'bg-dark-800 border-dark-700' : 'bg-gray-100 border-gray-200'}`}>
             <button
               onClick={() => setActiveTab('orders')}
               className={`px-4 py-1.5 rounded-md font-medium transition-colors ${
-                activeTab === 'orders' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                activeTab === 'orders' 
+                  ? isDark ? 'bg-dark-700 text-white shadow-sm' : 'bg-white text-gray-900 shadow-sm'
+                  : isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               All Orders
@@ -260,7 +267,9 @@ const OrderManager = () => {
             <button
               onClick={() => setActiveTab('packing')}
               className={`px-4 py-1.5 rounded-md font-medium transition-colors flex items-center gap-1.5 ${
-                activeTab === 'packing' ? 'bg-white text-[#B8860B] shadow-sm' : 'text-gray-600 hover:text-gray-900'
+                activeTab === 'packing' 
+                  ? isDark ? 'bg-dark-700 text-gold-400 shadow-sm' : 'bg-white text-gold-600 shadow-sm'
+                  : isDark ? 'text-gray-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
               <FiPackage className="w-4 h-4" />
@@ -269,7 +278,9 @@ const OrderManager = () => {
           </div>
           <button
             onClick={fetchOrdersAndStats}
-            className="p-2 border border-gray-300 rounded-md hover:bg-gray-50 text-gray-600"
+            className={`p-2 border rounded-md transition-colors ${
+              isDark ? 'border-dark-700 bg-dark-800 hover:bg-dark-700 text-gray-300' : 'border-gray-300 bg-white hover:bg-gray-50 text-gray-600'
+            }`}
             title="Refresh Orders"
           >
             <FiRefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
@@ -280,58 +291,78 @@ const OrderManager = () => {
       {/* Revenue & Order Metrics Bar */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
-          <div className="bg-white p-3.5 border border-gray-200 rounded-sm shadow-sm">
-            <p className="text-xs text-gray-500 font-medium">Gross Revenue</p>
-            <p className="text-lg font-serif text-gray-900 mt-0.5">{formatPrice(stats.grossRevenue || 0)}</p>
-            <span className="text-[10px] text-gray-400">Total Billed</span>
+          {/* Gross Revenue */}
+          <div className={`p-3.5 border rounded-xl shadow-sm transition-colors ${cardBg}`}>
+            <p className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Gross Revenue</p>
+            <p className={`text-lg font-serif font-bold mt-0.5 ${isDark ? 'text-white' : 'text-gray-900'}`}>{formatPrice(stats.grossRevenue || 0)}</p>
+            <span className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Total Billed</span>
           </div>
 
-          <div className="bg-red-50/50 p-3.5 border border-red-100 rounded-sm shadow-sm">
-            <p className="text-xs text-red-600 font-medium">Cancelled Amount</p>
-            <p className="text-lg font-serif text-red-700 mt-0.5">-{formatPrice(stats.cancelledOrderAmount || 0)}</p>
-            <span className="text-[10px] text-red-500">Deducted</span>
+          {/* Cancelled Amount */}
+          <div className={`p-3.5 border rounded-xl shadow-sm transition-colors ${
+            isDark ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-red-50/80 border-red-200 text-red-700'
+          }`}>
+            <p className="text-xs font-semibold">Cancelled Amount</p>
+            <p className="text-lg font-serif font-bold mt-0.5">-{formatPrice(stats.cancelledOrderAmount || 0)}</p>
+            <span className="text-[10px] opacity-80 font-medium">Deducted</span>
           </div>
 
-          <div className="bg-purple-50/50 p-3.5 border border-purple-100 rounded-sm shadow-sm">
-            <p className="text-xs text-purple-700 font-medium">Refunded Amount</p>
-            <p className="text-lg font-serif text-purple-800 mt-0.5">{formatPrice(stats.refundedAmount || 0)}</p>
-            <span className="text-[10px] text-purple-600">Processed</span>
+          {/* Refunded Amount */}
+          <div className={`p-3.5 border rounded-xl shadow-sm transition-colors ${
+            isDark ? 'bg-purple-500/10 border-purple-500/20 text-purple-400' : 'bg-purple-50/80 border-purple-200 text-purple-800'
+          }`}>
+            <p className="text-xs font-semibold">Refunded Amount</p>
+            <p className="text-lg font-serif font-bold mt-0.5">{formatPrice(stats.refundedAmount || 0)}</p>
+            <span className="text-[10px] opacity-80 font-medium">Processed</span>
           </div>
 
-          <div className="bg-amber-50/60 p-3.5 border border-amber-200 rounded-sm shadow-sm">
-            <p className="text-xs text-[#B8860B] font-semibold uppercase tracking-wider">Net Revenue</p>
-            <p className="text-lg font-serif text-[#1a1a1a] font-bold mt-0.5">{formatPrice(stats.netRevenue || 0)}</p>
-            <span className="text-[10px] text-emerald-600 font-medium">Active Net</span>
+          {/* Net Revenue */}
+          <div className={`p-3.5 border rounded-xl shadow-sm transition-colors ${
+            isDark ? 'bg-gold-500/15 border-gold-500/40' : 'bg-amber-50 border-amber-300'
+          }`}>
+            <p className="text-xs text-gold-500 font-bold uppercase tracking-wider">Net Revenue</p>
+            <p className={`text-lg font-serif font-bold mt-0.5 ${isDark ? 'text-gold-300' : 'text-gray-900'}`}>{formatPrice(stats.netRevenue || 0)}</p>
+            <span className="text-[10px] text-emerald-500 font-semibold">Active Net</span>
           </div>
 
-          <div className="bg-white p-3.5 border border-gray-200 rounded-sm shadow-sm">
-            <p className="text-xs text-gray-500 font-medium">Total Orders</p>
-            <p className="text-lg font-serif text-gray-900 mt-0.5">{stats.totalOrders || 0}</p>
-            <span className="text-[10px] text-gray-400">Lifetime</span>
+          {/* Total Orders */}
+          <div className={`p-3.5 border rounded-xl shadow-sm transition-colors ${cardBg}`}>
+            <p className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Total Orders</p>
+            <p className={`text-lg font-serif font-bold mt-0.5 ${isDark ? 'text-white' : 'text-gray-900'}`}>{stats.totalOrders || 0}</p>
+            <span className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Lifetime</span>
           </div>
 
-          <div className="bg-white p-3.5 border border-gray-200 rounded-sm shadow-sm">
-            <p className="text-xs text-yellow-700 font-medium">Pending / Queue</p>
-            <p className="text-lg font-serif text-yellow-800 mt-0.5">{stats.pendingOrders || 0}</p>
-            <span className="text-[10px] text-yellow-600 font-medium">Needs Action</span>
+          {/* Pending / Queue */}
+          <div className={`p-3.5 border rounded-xl shadow-sm transition-colors ${
+            isDark ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'bg-amber-50/60 border-amber-200 text-amber-800'
+          }`}>
+            <p className="text-xs font-semibold">Pending / Queue</p>
+            <p className="text-lg font-serif font-bold mt-0.5">{stats.pendingOrders || 0}</p>
+            <span className="text-[10px] opacity-80 font-medium">Needs Action</span>
           </div>
 
-          <div className="bg-white p-3.5 border border-gray-200 rounded-sm shadow-sm">
-            <p className="text-xs text-green-700 font-medium">Delivered</p>
-            <p className="text-lg font-serif text-green-800 mt-0.5">{stats.completedOrders || 0}</p>
-            <span className="text-[10px] text-green-600">Fulfilled</span>
+          {/* Delivered */}
+          <div className={`p-3.5 border rounded-xl shadow-sm transition-colors ${
+            isDark ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-emerald-50/60 border-emerald-200 text-emerald-800'
+          }`}>
+            <p className="text-xs font-semibold">Delivered</p>
+            <p className="text-lg font-serif font-bold mt-0.5">{stats.completedOrders || 0}</p>
+            <span className="text-[10px] opacity-80 font-medium">Fulfilled</span>
           </div>
 
-          <div className="bg-white p-3.5 border border-gray-200 rounded-sm shadow-sm">
-            <p className="text-xs text-red-600 font-medium">Cancelled</p>
-            <p className="text-lg font-serif text-red-700 mt-0.5">{stats.cancelledOrders || 0}</p>
-            <span className="text-[10px] text-red-400">Restocked</span>
+          {/* Cancelled */}
+          <div className={`p-3.5 border rounded-xl shadow-sm transition-colors ${
+            isDark ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-red-50/60 border-red-200 text-red-700'
+          }`}>
+            <p className="text-xs font-semibold">Cancelled</p>
+            <p className="text-lg font-serif font-bold mt-0.5">{stats.cancelledOrders || 0}</p>
+            <span className="text-[10px] opacity-80 font-medium">Restocked</span>
           </div>
         </div>
       )}
 
       {/* Filter Tabs & Search Bar */}
-      <div className="bg-white p-4 border border-gray-200 rounded-sm shadow-sm space-y-4">
+      <div className={`p-4 border rounded-xl shadow-sm space-y-4 transition-colors ${cardBg}`}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           {/* Status filter tabs */}
           <div className="flex flex-wrap gap-1.5">
@@ -349,8 +380,10 @@ const OrderManager = () => {
                 onClick={() => setStatusFilter(tab.key)}
                 className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                   statusFilter === tab.key
-                    ? 'bg-[#1a1a1a] text-white shadow-sm'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-gold-500 text-dark-950 font-bold shadow-sm'
+                    : isDark 
+                      ? 'bg-dark-700 text-gray-300 hover:bg-dark-600' 
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 {tab.label}
@@ -367,13 +400,17 @@ const OrderManager = () => {
                 placeholder="Search ID, customer, phone..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-[#B8860B] focus:border-[#B8860B] bg-white"
+                className={`w-full pl-9 pr-3 py-1.5 border rounded-lg text-xs focus:ring-1 focus:ring-gold-500 focus:border-gold-500 transition-colors ${
+                  isDark ? 'bg-dark-700 border-dark-600 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                }`}
               />
             </div>
             <select
               value={paymentFilter}
               onChange={(e) => setPaymentFilter(e.target.value)}
-              className="px-2.5 py-1.5 border border-gray-300 rounded text-xs focus:ring-1 focus:ring-[#B8860B] bg-white"
+              className={`px-2.5 py-1.5 border rounded-lg text-xs focus:ring-1 focus:ring-gold-500 transition-colors ${
+                isDark ? 'bg-dark-700 border-dark-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+              }`}
             >
               <option value="all">All Payments</option>
               <option value="paid">Paid</option>
@@ -386,25 +423,25 @@ const OrderManager = () => {
 
       {/* Main Content: Orders Table vs Packing View */}
       {activeTab === 'orders' ? (
-        <div className="bg-white border border-gray-200 rounded-sm shadow-sm overflow-hidden">
+        <div className={`border rounded-xl shadow-sm overflow-hidden transition-colors ${cardBg}`}>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-[#FAFAF7]">
+            <table className={`min-w-full divide-y ${isDark ? 'divide-dark-700' : 'divide-gray-200'}`}>
+              <thead className={headerBg}>
                 <tr>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
-                  <th className="px-5 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-5 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                  <th className={`px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>Order ID</th>
+                  <th className={`px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>Date</th>
+                  <th className={`px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>Customer</th>
+                  <th className={`px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>Items</th>
+                  <th className={`px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>Total</th>
+                  <th className={`px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>Payment</th>
+                  <th className={`px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>Status</th>
+                  <th className={`px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className={`divide-y ${isDark ? 'divide-dark-700' : 'divide-gray-200'}`}>
                 {filteredOrders.length === 0 ? (
                   <tr>
-                    <td colSpan="8" className="px-6 py-12 text-center text-sm text-gray-500">
+                    <td colSpan="8" className={`px-6 py-12 text-center text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                       {loading ? 'Loading orders...' : 'No matching orders found.'}
                     </td>
                   </tr>
@@ -419,46 +456,50 @@ const OrderManager = () => {
                       <tr
                         key={order._id}
                         className={`transition-colors cursor-pointer ${
-                          isCancelled ? 'bg-red-50/30 hover:bg-red-50/50' : isDelivered ? 'bg-green-50/20 hover:bg-green-50/40' : 'hover:bg-gray-50'
+                          isCancelled
+                            ? isDark ? 'bg-red-950/20 hover:bg-red-950/30' : 'bg-red-50/30 hover:bg-red-50/50'
+                            : isDelivered
+                            ? isDark ? 'bg-green-950/20 hover:bg-green-950/30' : 'bg-green-50/20 hover:bg-green-50/40'
+                            : isDark ? 'hover:bg-dark-750' : 'hover:bg-gray-50'
                         }`}
                         onClick={() => openOrderDetail(order)}
                       >
                         {/* Order ID */}
                         <td className="px-5 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-2">
-                            <span className={`text-sm font-semibold ${isCancelled ? 'text-red-700 line-through' : 'text-gray-900'}`}>
+                            <span className={`text-sm font-semibold ${isCancelled ? 'text-red-500 line-through' : isDark ? 'text-white' : 'text-gray-900'}`}>
                               {displayId}
                             </span>
                             {isCancelled && (
-                              <span className="text-[10px] bg-red-100 text-red-800 font-bold px-1.5 py-0.5 rounded uppercase">
+                              <span className="text-[10px] bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 font-bold px-1.5 py-0.5 rounded uppercase">
                                 Cancelled
                               </span>
                             )}
                             {isDelivered && (
-                              <span className="text-[10px] bg-green-100 text-green-800 font-bold px-1.5 py-0.5 rounded uppercase inline-flex items-center gap-0.5">
+                              <span className="text-[10px] bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 font-bold px-1.5 py-0.5 rounded uppercase inline-flex items-center gap-0.5">
                                 <FiLock className="w-2.5 h-2.5" /> Delivered
                               </span>
                             )}
                           </div>
-                          <span className="text-xs text-gray-400 font-mono">#{order._id.slice(-6)}</span>
+                          <span className="text-xs text-gray-400 dark:text-gray-500 font-mono">#{order._id.slice(-6)}</span>
                         </td>
 
                         {/* Date */}
-                        <td className="px-5 py-4 whitespace-nowrap text-xs text-gray-600">
+                        <td className={`px-5 py-4 whitespace-nowrap text-xs ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                           {formatDate(order.createdAt)}
                         </td>
 
                         {/* Customer */}
                         <td className="px-5 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{order.user?.name || 'Guest'}</div>
-                          <div className="text-xs text-gray-500">{order.user?.email || order.shippingAddress?.phone || ''}</div>
+                          <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{order.user?.name || 'Guest'}</div>
+                          <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{order.user?.email || order.shippingAddress?.phone || ''}</div>
                         </td>
 
                         {/* Items Thumbnail Preview */}
                         <td className="px-5 py-4 whitespace-nowrap">
                           <div className="flex items-center gap-1.5">
                             {order.items?.slice(0, 3).map((item, idx) => (
-                              <div key={idx} className="w-8 h-8 rounded bg-gray-50 border border-gray-200 p-0.5 flex-shrink-0" title={item.coinName}>
+                              <div key={idx} className={`w-8 h-8 rounded border p-0.5 flex-shrink-0 ${isDark ? 'bg-dark-700 border-dark-600' : 'bg-gray-50 border-gray-200'}`} title={item.coinName}>
                                 <img
                                   src={item.coinImage || getImageUrl(item.coin?.images)}
                                   alt={item.coinName}
@@ -467,11 +508,11 @@ const OrderManager = () => {
                               </div>
                             ))}
                             {order.items?.length > 3 && (
-                              <span className="text-xs text-gray-500 bg-gray-100 px-1.5 py-0.5 rounded font-medium">
+                              <span className={`text-xs px-1.5 py-0.5 rounded font-medium ${isDark ? 'text-gray-300 bg-dark-700' : 'text-gray-500 bg-gray-100'}`}>
                                 +{order.items.length - 3}
                               </span>
                             )}
-                            <span className="text-xs text-gray-500 ml-1">
+                            <span className={`text-xs ml-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                               ({order.items?.reduce((acc, i) => acc + (i.quantity || 1), 0)} pcs)
                             </span>
                           </div>
@@ -479,11 +520,11 @@ const OrderManager = () => {
 
                         {/* Total */}
                         <td className="px-5 py-4 whitespace-nowrap">
-                          <div className={`text-sm font-medium ${isCancelled ? 'text-gray-400 line-through' : 'text-gray-900 font-semibold'}`}>
+                          <div className={`text-sm ${isCancelled ? (isDark ? 'text-gray-500 line-through' : 'text-gray-400 line-through') : (isDark ? 'text-white font-semibold' : 'text-gray-900 font-semibold')}`}>
                             {formatPrice(order.totalAmount)}
                           </div>
                           {isCancelled && (
-                            <span className="text-[10px] text-red-600 block">Excluded from revenue</span>
+                            <span className="text-[10px] text-red-500 dark:text-red-400 block">Excluded from revenue</span>
                           )}
                         </td>
 
@@ -493,7 +534,7 @@ const OrderManager = () => {
                             <span className={`px-2 py-0.5 inline-flex text-xs font-semibold rounded-full capitalize w-fit ${getPaymentStatusColor(order.paymentStatus)}`}>
                               {order.paymentStatus || 'pending'}
                             </span>
-                            <span className="text-[11px] text-gray-500">
+                            <span className={`text-[11px] ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                               {order.paymentMethod || 'Online'}
                             </span>
                             {hasRefund && (
@@ -507,11 +548,11 @@ const OrderManager = () => {
                         {/* Status Dropdown */}
                         <td className="px-5 py-4 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                           {isCancelled ? (
-                            <span className="px-3 py-1 text-xs font-bold rounded-full bg-red-100 text-red-800 border border-red-300">
+                            <span className="px-3 py-1 text-xs font-bold rounded-full bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300 border border-red-300 dark:border-red-700">
                               CANCELLED
                             </span>
                           ) : isDelivered ? (
-                            <span className="px-3 py-1 text-xs font-bold rounded-full bg-green-100 text-green-800 border border-green-300 inline-flex items-center gap-1">
+                            <span className="px-3 py-1 text-xs font-bold rounded-full bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border border-green-300 dark:border-green-700 inline-flex items-center gap-1">
                               <FiLock className="w-3 h-3" /> DELIVERED (LOCKED)
                             </span>
                           ) : (
@@ -534,7 +575,7 @@ const OrderManager = () => {
                         <td className="px-5 py-4 whitespace-nowrap text-right text-xs font-medium space-x-2" onClick={(e) => e.stopPropagation()}>
                           <button
                             onClick={() => openOrderDetail(order)}
-                            className="p-1.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded"
+                            className={`p-1.5 rounded transition-colors ${isDark ? 'text-gray-300 hover:text-white hover:bg-dark-700' : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'}`}
                             title="View Details"
                           >
                             <FiEye className="w-4 h-4" />
@@ -542,7 +583,7 @@ const OrderManager = () => {
 
                           <button
                             onClick={(e) => openPackingModal(order, e)}
-                            className="p-1.5 text-amber-700 hover:text-amber-900 hover:bg-amber-50 rounded"
+                            className={`p-1.5 rounded transition-colors ${isDark ? 'text-amber-400 hover:text-amber-300 hover:bg-amber-950/40' : 'text-amber-700 hover:text-amber-900 hover:bg-amber-50'}`}
                             title="Packing Slip"
                           >
                             <FiPackage className="w-4 h-4" />
@@ -551,7 +592,7 @@ const OrderManager = () => {
                           {!isCancelled && !isDelivered && (
                             <button
                               onClick={(e) => openCancelModal(order, e)}
-                              className="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded"
+                              className={`p-1.5 rounded transition-colors ${isDark ? 'text-red-400 hover:text-red-300 hover:bg-red-950/40' : 'text-red-600 hover:text-red-800 hover:bg-red-50'}`}
                               title="Cancel Order"
                             >
                               <FiXCircle className="w-4 h-4" />
@@ -561,7 +602,7 @@ const OrderManager = () => {
                           {isCancelled && order.paymentStatus === 'paid' && (
                             <button
                               onClick={(e) => openRefundModal(order, e)}
-                              className="p-1.5 text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded"
+                              className={`p-1.5 rounded transition-colors ${isDark ? 'text-purple-400 hover:text-purple-300 hover:bg-purple-950/40' : 'text-purple-600 hover:text-purple-800 hover:bg-purple-50'}`}
                               title="Process Refund"
                             >
                               <FiDollarSign className="w-4 h-4" />
@@ -580,10 +621,10 @@ const OrderManager = () => {
         /* Dedicated Packing Queue View */
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredOrders.filter(o => o.status !== 'cancelled' && o.status !== 'delivered').length === 0 ? (
-            <div className="col-span-full bg-white p-12 text-center border border-gray-200 rounded-sm">
+            <div className={`col-span-full p-12 text-center border rounded-xl ${cardBg}`}>
               <FiCheckCircle className="w-12 h-12 text-green-500 mx-auto mb-3" />
-              <h3 className="text-lg font-medium text-gray-900">Packing Queue Clean!</h3>
-              <p className="text-sm text-gray-500 mt-1">There are no pending orders requiring packing at this moment.</p>
+              <h3 className={`text-lg font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>Packing Queue Clean!</h3>
+              <p className={`text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>There are no pending orders requiring packing at this moment.</p>
             </div>
           ) : (
             filteredOrders
@@ -591,12 +632,12 @@ const OrderManager = () => {
               .map((order) => {
                 const nextStep = nextStepMap[order.status?.toLowerCase()] || nextStepMap.confirmed;
                 return (
-                  <div key={order._id} className="bg-white border border-gray-200 rounded-sm p-5 shadow-sm flex flex-col justify-between">
+                  <div key={order._id} className={`border rounded-xl p-5 shadow-sm flex flex-col justify-between transition-colors ${cardBg}`}>
                     <div>
-                      <div className="flex items-center justify-between pb-3 border-b border-gray-100 mb-3">
+                      <div className={`flex items-center justify-between pb-3 border-b mb-3 ${isDark ? 'border-dark-700' : 'border-gray-100'}`}>
                         <div>
-                          <span className="text-sm font-bold text-gray-900">{order.orderNumber || `#${order._id.slice(-8)}`}</span>
-                          <span className="text-xs text-gray-400 block">{formatDate(order.createdAt)}</span>
+                          <span className={`text-sm font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{order.orderNumber || `#${order._id.slice(-8)}`}</span>
+                          <span className={`text-xs block ${isDark ? 'text-gray-400' : 'text-gray-400'}`}>{formatDate(order.createdAt)}</span>
                         </div>
                         <span className={`px-2.5 py-0.5 text-xs font-semibold rounded-full capitalize ${getStatusColor(order.status)}`}>
                           {order.status}
@@ -605,9 +646,9 @@ const OrderManager = () => {
 
                       {/* Items to Pack */}
                       <div className="space-y-2 mb-4">
-                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Items to Pack:</p>
+                        <p className={`text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Items to Pack:</p>
                         {order.items?.map((item, idx) => (
-                          <div key={idx} className="flex items-center justify-between bg-[#FAFAF7] p-2 rounded border border-gray-100">
+                          <div key={idx} className={`flex items-center justify-between p-2 rounded border ${isDark ? 'bg-dark-700 border-dark-600' : 'bg-[#FAFAF7] border-gray-100'}`}>
                             <div className="flex items-center gap-2.5">
                               <img
                                 src={item.coinImage || getImageUrl(item.coin?.images)}
@@ -615,13 +656,13 @@ const OrderManager = () => {
                                 className={`w-8 h-8 object-contain ${isDark ? '' : 'mix-blend-multiply'}`}
                               />
                               <div>
-                                <p className="text-xs font-medium text-gray-900 line-clamp-1">{item.coinName}</p>
-                                <p className="text-[11px] text-gray-500">
+                                <p className={`text-xs font-medium line-clamp-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>{item.coinName}</p>
+                                <p className={`text-[11px] ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                                   {item.coin?.denomination || item.coin?.material || 'Numismatic item'}
                                 </p>
                               </div>
                             </div>
-                            <span className="text-xs font-bold bg-amber-100 text-amber-900 px-2 py-0.5 rounded">
+                            <span className="text-xs font-bold bg-amber-100 dark:bg-amber-900/40 text-amber-900 dark:text-amber-300 px-2 py-0.5 rounded">
                               × {item.quantity}
                             </span>
                           </div>
@@ -629,19 +670,21 @@ const OrderManager = () => {
                       </div>
 
                       {/* Customer & Shipping info */}
-                      <div className="text-xs text-gray-600 bg-gray-50 p-2.5 rounded border border-gray-100 space-y-1 mb-4">
-                        <p className="font-semibold text-gray-800">{order.user?.name || 'Customer'}</p>
+                      <div className={`text-xs p-2.5 rounded border space-y-1 mb-4 ${isDark ? 'bg-dark-750 border-dark-600 text-gray-300' : 'bg-gray-50 border-gray-100 text-gray-600'}`}>
+                        <p className={`font-semibold ${isDark ? 'text-white' : 'text-gray-800'}`}>{order.user?.name || 'Customer'}</p>
                         <p>{order.shippingAddress?.street}, {order.shippingAddress?.city}</p>
                         <p>{order.shippingAddress?.state} - {order.shippingAddress?.zipCode}</p>
-                        <p className="text-gray-500">Phone: {order.shippingAddress?.phone || order.user?.phone || 'N/A'}</p>
+                        <p className={isDark ? 'text-gray-400' : 'text-gray-500'}>Phone: {order.shippingAddress?.phone || order.user?.phone || 'N/A'}</p>
                       </div>
                     </div>
 
                     {/* Fast Actions */}
-                    <div className="pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
+                    <div className={`pt-3 border-t flex items-center justify-between gap-2 ${isDark ? 'border-dark-700' : 'border-gray-100'}`}>
                       <button
                         onClick={() => openPackingModal(order)}
-                        className="px-3 py-1.5 border border-gray-300 text-gray-700 text-xs rounded hover:bg-gray-50 flex items-center gap-1"
+                        className={`px-3 py-1.5 border text-xs rounded flex items-center gap-1 transition-colors ${
+                          isDark ? 'border-dark-600 text-gray-300 hover:bg-dark-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                        }`}
                       >
                         <FiPrinter className="w-3.5 h-3.5" />
                         Slip
@@ -666,12 +709,12 @@ const OrderManager = () => {
       {/* ========================================================================= */}
       {detailModalOpen && selectedOrder && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border border-gray-200">
+          <div className={`rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border transition-colors ${isDark ? 'bg-dark-800 border-dark-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}>
             {/* Modal Header */}
-            <div className="sticky top-0 bg-[#FAFAF7] border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
+            <div className={`sticky top-0 border-b px-6 py-4 flex items-center justify-between z-10 ${isDark ? 'bg-dark-750 border-dark-700' : 'bg-[#FAFAF7] border-gray-200'}`}>
               <div>
                 <div className="flex items-center gap-3">
-                  <h2 className="text-xl font-serif text-gray-900">
+                  <h2 className={`text-xl font-serif ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     Order {selectedOrder.orderNumber || `#${selectedOrder._id.slice(-8).toUpperCase()}`}
                   </h2>
                   <span className={`px-2.5 py-0.5 text-xs font-bold rounded-full uppercase ${getStatusColor(selectedOrder.status)}`}>
@@ -681,13 +724,13 @@ const OrderManager = () => {
                     {selectedOrder.paymentStatus}
                   </span>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                   Placed on {formatDate(selectedOrder.createdAt)} &middot; Database ID: {selectedOrder._id}
                 </p>
               </div>
               <button
                 onClick={() => setDetailModalOpen(false)}
-                className="text-gray-400 hover:text-gray-600 p-1.5 rounded-full hover:bg-gray-200"
+                className={`p-1.5 rounded-full transition-colors ${isDark ? 'text-gray-400 hover:text-white hover:bg-dark-700' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-200'}`}
               >
                 ✕
               </button>
@@ -695,33 +738,33 @@ const OrderManager = () => {
 
             <div className="p-6 space-y-6">
               {/* STATUS WORKFLOW STEPPER */}
-              <div className="bg-white p-5 border border-gray-200 rounded-lg">
-                <h3 className="text-xs font-semibold uppercase text-gray-500 tracking-wider mb-4">
+              <div className={`p-5 border rounded-xl ${isDark ? 'bg-dark-750 border-dark-700' : 'bg-white border-gray-200'}`}>
+                <h3 className={`text-xs font-semibold uppercase tracking-wider mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                   Fulfillment Status Workflow
                 </h3>
 
                 {selectedOrder.status === 'delivered' ? (
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
-                    <FiCheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                  <div className={`border rounded-lg p-4 flex items-start gap-3 ${isDark ? 'bg-green-950/30 border-green-800/50' : 'bg-green-50 border-green-200'}`}>
+                    <FiCheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="text-sm font-bold text-green-900 flex items-center gap-1.5">
-                        <FiLock className="w-4 h-4 text-green-700" /> ORDER IS DELIVERED & COMPLETED (LOCKED)
+                      <h4 className={`text-sm font-bold flex items-center gap-1.5 ${isDark ? 'text-green-300' : 'text-green-900'}`}>
+                        <FiLock className="w-4 h-4 text-green-500" /> ORDER IS DELIVERED & COMPLETED (LOCKED)
                       </h4>
-                      <p className="text-xs text-green-700 mt-0.5">
+                      <p className={`text-xs mt-0.5 ${isDark ? 'text-green-400/90' : 'text-green-700'}`}>
                         This order has been successfully delivered and fulfilled. To preserve audit records and prevent accidental changes, all status, tracking, and details are read-only.
                       </p>
                     </div>
                   </div>
                 ) : selectedOrder.status === 'cancelled' ? (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3">
-                    <FiAlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+                  <div className={`border rounded-lg p-4 flex items-start gap-3 ${isDark ? 'bg-red-950/30 border-red-800/50' : 'bg-red-50 border-red-200'}`}>
+                    <FiAlertCircle className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
                     <div>
-                      <h4 className="text-sm font-bold text-red-900">ORDER IS PERMANENTLY CANCELLED</h4>
-                      <p className="text-xs text-red-700 mt-0.5">
+                      <h4 className={`text-sm font-bold ${isDark ? 'text-red-300' : 'text-red-900'}`}>ORDER IS PERMANENTLY CANCELLED</h4>
+                      <p className={`text-xs mt-0.5 ${isDark ? 'text-red-400/90' : 'text-red-700'}`}>
                         This order cannot be confirmed, processed, shipped, or delivered. All purchased item quantities were restored to inventory.
                       </p>
                       {selectedOrder.cancelledAt && (
-                        <p className="text-xs text-red-600 mt-2 font-medium">
+                        <p className={`text-xs mt-2 font-medium ${isDark ? 'text-red-400' : 'text-red-600'}`}>
                           Cancelled on {formatDate(selectedOrder.cancelledAt)} &middot; Reason: {selectedOrder.cancellationReason || 'No reason provided'}
                         </p>
                       )}
@@ -730,7 +773,7 @@ const OrderManager = () => {
                 ) : (
                   <div>
                     <div className="flex items-center justify-between relative">
-                      <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 bg-gray-200"></div>
+                      <div className={`absolute left-0 top-1/2 transform -translate-y-1/2 w-full h-1 ${isDark ? 'bg-dark-600' : 'bg-gray-200'}`}></div>
                       {['pending', 'confirmed', 'processing', 'shipped', 'delivered'].map((step, idx, arr) => {
                         const stepsOrder = ['pending', 'confirmed', 'processing', 'shipped', 'delivered'];
                         const currentIndex = stepsOrder.indexOf(selectedOrder.status?.toLowerCase());
@@ -744,13 +787,15 @@ const OrderManager = () => {
                               onClick={() => handleStatusChange(selectedOrder._id, step)}
                               className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                                 isDone
-                                  ? 'bg-[#B8860B] text-white ring-2 ring-amber-200'
+                                  ? 'bg-[#B8860B] text-white ring-2 ring-amber-200 dark:ring-amber-900/50'
+                                  : isDark
+                                  ? 'bg-dark-700 border-2 border-dark-600 text-gray-400 hover:border-gray-500'
                                   : 'bg-white border-2 border-gray-300 text-gray-400 hover:border-gray-400'
-                              } ${isCurrent ? 'scale-110 shadow-md ring-4 ring-amber-100' : ''} ${selectedOrder.status === 'delivered' ? 'cursor-not-allowed opacity-90' : ''}`}
+                              } ${isCurrent ? 'scale-110 shadow-md ring-4 ring-amber-100 dark:ring-amber-900/30' : ''} ${selectedOrder.status === 'delivered' ? 'cursor-not-allowed opacity-90' : ''}`}
                             >
                               {idx + 1}
                             </button>
-                            <span className={`text-xs mt-1.5 capitalize font-medium ${isDone ? 'text-gray-900' : 'text-gray-400'}`}>
+                            <span className={`text-xs mt-1.5 capitalize font-medium ${isDone ? (isDark ? 'text-white' : 'text-gray-900') : 'text-gray-400'}`}>
                               {step}
                             </span>
                           </div>
@@ -758,9 +803,9 @@ const OrderManager = () => {
                       })}
                     </div>
 
-                    <div className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3">
+                    <div className={`mt-4 pt-4 border-t flex flex-wrap items-center justify-between gap-3 ${isDark ? 'border-dark-700' : 'border-gray-100'}`}>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">Quick Advance:</span>
+                        <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Quick Advance:</span>
                         {selectedOrder.status === 'pending' && (
                           <button
                             onClick={() => handleStatusChange(selectedOrder._id, 'confirmed')}
@@ -797,7 +842,7 @@ const OrderManager = () => {
 
                       <button
                         onClick={(e) => openCancelModal(selectedOrder, e)}
-                        className="px-3 py-1 text-xs text-red-600 hover:bg-red-50 border border-red-200 rounded font-medium"
+                        className="px-3 py-1 text-xs text-red-500 hover:bg-red-500/10 border border-red-500/30 rounded font-medium transition-colors"
                       >
                         Cancel This Order
                       </button>
@@ -809,103 +854,102 @@ const OrderManager = () => {
               {/* 2 COLUMNS: Customer + Shipping */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Customer Info Card */}
-                <div className="bg-white p-5 border border-gray-200 rounded-lg space-y-3">
-                  <div className="flex items-center gap-2 text-gray-700 border-b pb-2">
+                <div className={`p-5 border rounded-xl space-y-3 ${isDark ? 'bg-dark-750 border-dark-700' : 'bg-white border-gray-200'}`}>
+                  <div className={`flex items-center gap-2 border-b pb-2 ${isDark ? 'border-dark-700 text-gray-300' : 'border-gray-100 text-gray-700'}`}>
                     <FiUser className="w-4 h-4 text-[#B8860B]" />
-                    <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Customer Details</h4>
+                    <h4 className={`text-sm font-bold uppercase tracking-wider ${isDark ? 'text-white' : 'text-gray-900'}`}>Customer Details</h4>
                   </div>
-                  <div className="text-xs space-y-1.5 text-gray-600">
-                    <p><strong className="text-gray-900">Name:</strong> {selectedOrder.user?.name || 'Guest'}</p>
-                    <p><strong className="text-gray-900">Email:</strong> {selectedOrder.user?.email || 'N/A'}</p>
-                    <p><strong className="text-gray-900">Mobile Phone:</strong> {selectedOrder.shippingAddress?.phone || selectedOrder.user?.phone || 'N/A'}</p>
-                    <p><strong className="text-gray-900">User ID:</strong> {selectedOrder.user?._id || 'N/A'}</p>
+                  <div className={`text-xs space-y-1.5 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                    <p><strong className={isDark ? 'text-white' : 'text-gray-900'}>Name:</strong> {selectedOrder.user?.name || 'Guest'}</p>
+                    <p><strong className={isDark ? 'text-white' : 'text-gray-900'}>Email:</strong> {selectedOrder.user?.email || 'N/A'}</p>
+                    <p><strong className={isDark ? 'text-white' : 'text-gray-900'}>Mobile Phone:</strong> {selectedOrder.shippingAddress?.phone || selectedOrder.user?.phone || 'N/A'}</p>
+                    <p><strong className={isDark ? 'text-white' : 'text-gray-900'}>User ID:</strong> {selectedOrder.user?._id || 'N/A'}</p>
                   </div>
                 </div>
 
                 {/* Shipping Info Card */}
-                <div className="bg-white p-5 border border-gray-200 rounded-lg space-y-3">
-                  <div className="flex items-center gap-2 text-gray-700 border-b pb-2">
+                <div className={`p-5 border rounded-xl space-y-3 ${isDark ? 'bg-dark-750 border-dark-700' : 'bg-white border-gray-200'}`}>
+                  <div className={`flex items-center gap-2 border-b pb-2 ${isDark ? 'border-dark-700 text-gray-300' : 'border-gray-100 text-gray-700'}`}>
                     <FiMapPin className="w-4 h-4 text-[#B8860B]" />
-                    <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Shipping Address</h4>
+                    <h4 className={`text-sm font-bold uppercase tracking-wider ${isDark ? 'text-white' : 'text-gray-900'}`}>Shipping Address</h4>
                   </div>
-                  <div className="text-xs space-y-1 text-gray-600">
-                    <p className="font-medium text-gray-900">{selectedOrder.shippingAddress?.street}</p>
+                  <div className={`text-xs space-y-1 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                    <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{selectedOrder.shippingAddress?.street}</p>
                     {selectedOrder.shippingAddress?.landmark && (
-                      <p><span className="text-amber-700 font-medium">Landmark:</span> {selectedOrder.shippingAddress.landmark}</p>
+                      <p><span className="text-amber-500 font-medium">Landmark:</span> {selectedOrder.shippingAddress.landmark}</p>
                     )}
                     <p>{selectedOrder.shippingAddress?.city}, {selectedOrder.shippingAddress?.state} - {selectedOrder.shippingAddress?.zipCode}</p>
                     <p>{selectedOrder.shippingAddress?.country || 'India'}</p>
-                    <p className="pt-1 text-gray-900"><strong>Contact Phone:</strong> {selectedOrder.shippingAddress?.phone || 'N/A'}</p>
+                    <p className={`pt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}><strong>Contact Phone:</strong> {selectedOrder.shippingAddress?.phone || 'N/A'}</p>
                   </div>
                 </div>
               </div>
 
               {/* PRODUCTS & LIVE INVENTORY TABLE */}
-              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                <div className="px-5 py-3 bg-[#FAFAF7] border-b border-gray-200 flex items-center justify-between">
-                  <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Ordered Products</h4>
-                  <span className="text-xs text-gray-500">{selectedOrder.items?.length} items</span>
+              <div className={`border rounded-xl overflow-hidden ${isDark ? 'bg-dark-750 border-dark-700' : 'bg-white border-gray-200'}`}>
+                <div className={`px-5 py-3 border-b flex items-center justify-between ${isDark ? 'bg-dark-700 border-dark-600' : 'bg-[#FAFAF7] border-gray-200'}`}>
+                  <h4 className={`text-sm font-bold uppercase tracking-wider ${isDark ? 'text-white' : 'text-gray-900'}`}>Ordered Products</h4>
+                  <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{selectedOrder.items?.length} items</span>
                 </div>
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200 text-xs">
-                    <thead className="bg-gray-50">
+                  <table className={`min-w-full divide-y text-xs ${isDark ? 'divide-dark-700' : 'divide-gray-200'}`}>
+                    <thead className={isDark ? 'bg-dark-700 text-gray-300' : 'bg-gray-50 text-gray-500'}>
                       <tr>
-                        <th className="px-4 py-2.5 text-left text-gray-500 uppercase">Product</th>
-                        <th className="px-4 py-2.5 text-left text-gray-500 uppercase">Specs / SKU</th>
-                        <th className="px-4 py-2.5 text-center text-gray-500 uppercase">Qty</th>
-                        <th className="px-4 py-2.5 text-left text-gray-500 uppercase">Current Live Stock</th>
-                        <th className="px-4 py-2.5 text-right text-gray-500 uppercase">Unit Price</th>
-                        <th className="px-4 py-2.5 text-right text-gray-500 uppercase">Line Total</th>
+                        <th className="px-4 py-2.5 text-left uppercase">Product</th>
+                        <th className="px-4 py-2.5 text-left uppercase">Specs / SKU</th>
+                        <th className="px-4 py-2.5 text-center uppercase">Qty</th>
+                        <th className="px-4 py-2.5 text-left uppercase">Current Live Stock</th>
+                        <th className="px-4 py-2.5 text-right uppercase">Unit Price</th>
+                        <th className="px-4 py-2.5 text-right uppercase">Line Total</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100">
+                    <tbody className={`divide-y ${isDark ? 'divide-dark-700' : 'divide-gray-100'}`}>
                       {selectedOrder.items?.map((item, idx) => {
                         const currentStock = item.coin?.quantity !== undefined ? item.coin.quantity : null;
-                        const isAvailable = item.coin?.isAvailable;
 
                         return (
-                          <tr key={idx} className="hover:bg-gray-50/80">
+                          <tr key={idx} className={isDark ? 'hover:bg-dark-700/50' : 'hover:bg-gray-50/80'}>
                             <td className="px-4 py-3 flex items-center gap-3">
                               <img
                                 src={item.coinImage || getImageUrl(item.coin?.images)}
                                 alt={item.coinName}
-                                className={`w-10 h-10 object-contain rounded border border-gray-200 p-0.5 ${isDark ? '' : 'mix-blend-multiply bg-white'}`}
+                                className={`w-10 h-10 object-contain rounded border p-0.5 ${isDark ? 'bg-dark-700 border-dark-600' : 'bg-white border-gray-200 mix-blend-multiply'}`}
                               />
                               <div>
-                                <p className="font-semibold text-gray-900 text-xs">{item.coinName}</p>
-                                <p className="text-[11px] text-gray-400">ID: {item.coin?._id || item.coin}</p>
+                                <p className={`font-semibold text-xs ${isDark ? 'text-white' : 'text-gray-900'}`}>{item.coinName}</p>
+                                <p className={`text-[11px] ${isDark ? 'text-gray-400' : 'text-gray-400'}`}>ID: {item.coin?._id || item.coin}</p>
                               </div>
                             </td>
-                            <td className="px-4 py-3 text-gray-600">
+                            <td className={`px-4 py-3 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                               <p>{item.coin?.denomination || 'Artifact'}</p>
-                              <p className="text-[11px] text-gray-400">{item.coin?.era || item.coin?.material || 'Rare'}</p>
+                              <p className={`text-[11px] ${isDark ? 'text-gray-400' : 'text-gray-400'}`}>{item.coin?.era || item.coin?.material || 'Rare'}</p>
                             </td>
-                            <td className="px-4 py-3 text-center font-bold text-gray-900 text-sm">
+                            <td className={`px-4 py-3 text-center font-bold text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
                               {item.quantity}
                             </td>
                             <td className="px-4 py-3">
                               {currentStock !== null ? (
                                 currentStock > 5 ? (
-                                  <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-green-100 text-green-800">
+                                  <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300">
                                     {currentStock} units in stock
                                   </span>
                                 ) : currentStock > 0 ? (
-                                  <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-yellow-100 text-yellow-800">
+                                  <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300">
                                     Low Stock: {currentStock} left
                                   </span>
                                 ) : (
-                                  <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-100 text-red-800">
+                                  <span className="px-2 py-0.5 rounded-full text-[11px] font-medium bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300">
                                     Out of stock (0)
                                   </span>
                                 )
                               ) : (
-                                <span className="text-gray-400">Available</span>
+                                <span className={isDark ? 'text-gray-400' : 'text-gray-400'}>Available</span>
                               )}
                             </td>
-                            <td className="px-4 py-3 text-right font-medium text-gray-700">
+                            <td className={`px-4 py-3 text-right font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                               {formatPrice(item.priceAtPurchase || 0)}
                             </td>
-                            <td className="px-4 py-3 text-right font-bold text-gray-900">
+                            <td className={`px-4 py-3 text-right font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                               {formatPrice((item.priceAtPurchase || 0) * item.quantity)}
                             </td>
                           </tr>
@@ -919,39 +963,39 @@ const OrderManager = () => {
               {/* 2 COLUMNS: Payment & Summary */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Payment Breakdown Card */}
-                <div className="bg-white p-5 border border-gray-200 rounded-lg space-y-3">
-                  <div className="flex items-center gap-2 text-gray-700 border-b pb-2">
+                <div className={`p-5 border rounded-xl space-y-3 ${isDark ? 'bg-dark-750 border-dark-700' : 'bg-white border-gray-200'}`}>
+                  <div className={`flex items-center gap-2 border-b pb-2 ${isDark ? 'border-dark-700 text-gray-300' : 'border-gray-100 text-gray-700'}`}>
                     <FiCreditCard className="w-4 h-4 text-[#B8860B]" />
-                    <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Payment Information</h4>
+                    <h4 className={`text-sm font-bold uppercase tracking-wider ${isDark ? 'text-white' : 'text-gray-900'}`}>Payment Information</h4>
                   </div>
-                  <div className="text-xs space-y-1.5 text-gray-600">
-                    <p><strong className="text-gray-900">Payment Method:</strong> {selectedOrder.paymentMethod || 'Razorpay Online'}</p>
-                    <p><strong className="text-gray-900">Payment Status:</strong> <span className={`px-2 py-0.5 rounded-full font-semibold capitalize ${getPaymentStatusColor(selectedOrder.paymentStatus)}`}>{selectedOrder.paymentStatus}</span></p>
-                    <p><strong className="text-gray-900">Razorpay Payment ID:</strong> <span className="font-mono text-gray-700">{selectedOrder.razorpayPaymentId || 'N/A'}</span></p>
-                    <p><strong className="text-gray-900">Razorpay Order ID:</strong> <span className="font-mono text-gray-700">{selectedOrder.razorpayOrderId || 'N/A'}</span></p>
-                    <p><strong className="text-gray-900">Paid Amount:</strong> <span className="font-bold text-gray-900">{formatPrice(selectedOrder.totalAmount)}</span></p>
+                  <div className={`text-xs space-y-1.5 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                    <p><strong className={isDark ? 'text-white' : 'text-gray-900'}>Payment Method:</strong> {selectedOrder.paymentMethod || 'Razorpay Online'}</p>
+                    <p><strong className={isDark ? 'text-white' : 'text-gray-900'}>Payment Status:</strong> <span className={`px-2 py-0.5 rounded-full font-semibold capitalize ${getPaymentStatusColor(selectedOrder.paymentStatus)}`}>{selectedOrder.paymentStatus}</span></p>
+                    <p><strong className={isDark ? 'text-white' : 'text-gray-900'}>Razorpay Payment ID:</strong> <span className={`font-mono ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{selectedOrder.razorpayPaymentId || 'N/A'}</span></p>
+                    <p><strong className={isDark ? 'text-white' : 'text-gray-900'}>Razorpay Order ID:</strong> <span className={`font-mono ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{selectedOrder.razorpayOrderId || 'N/A'}</span></p>
+                    <p><strong className={isDark ? 'text-white' : 'text-gray-900'}>Paid Amount:</strong> <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{formatPrice(selectedOrder.totalAmount)}</span></p>
                   </div>
                 </div>
 
                 {/* Financial Totals Card */}
-                <div className="bg-white p-5 border border-gray-200 rounded-lg space-y-3">
-                  <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider border-b pb-2">Financial Breakdown</h4>
-                  <div className="text-xs space-y-2 text-gray-600">
+                <div className={`p-5 border rounded-xl space-y-3 ${isDark ? 'bg-dark-750 border-dark-700' : 'bg-white border-gray-200'}`}>
+                  <h4 className={`text-sm font-bold uppercase tracking-wider border-b pb-2 ${isDark ? 'border-dark-700 text-white' : 'border-gray-100 text-gray-900'}`}>Financial Breakdown</h4>
+                  <div className={`text-xs space-y-2 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
                     <div className="flex justify-between">
                       <span>Items Subtotal:</span>
-                      <span className="font-medium text-gray-900">{formatPrice(selectedOrder.subtotal || 0)}</span>
+                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{formatPrice(selectedOrder.subtotal || 0)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>GST Tax (18%):</span>
-                      <span className="font-medium text-gray-900">{formatPrice(selectedOrder.tax || 0)}</span>
+                      <span className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{formatPrice(selectedOrder.tax || 0)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Shipping Fee:</span>
-                      <span className="text-green-600 font-medium">{selectedOrder.shippingFee ? formatPrice(selectedOrder.shippingFee) : 'FREE'}</span>
+                      <span className="text-green-500 font-medium">{selectedOrder.shippingFee ? formatPrice(selectedOrder.shippingFee) : 'FREE'}</span>
                     </div>
-                    <div className="flex justify-between border-t pt-2 text-sm">
-                      <span className="font-bold text-gray-900">Total Billed:</span>
-                      <span className="font-bold text-gray-900 font-serif text-base">{formatPrice(selectedOrder.totalAmount)}</span>
+                    <div className={`flex justify-between border-t pt-2 text-sm ${isDark ? 'border-dark-700' : 'border-gray-200'}`}>
+                      <span className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Total Billed:</span>
+                      <span className={`font-bold font-serif text-base ${isDark ? 'text-gold-400' : 'text-gray-900'}`}>{formatPrice(selectedOrder.totalAmount)}</span>
                     </div>
                   </div>
                 </div>
@@ -959,34 +1003,34 @@ const OrderManager = () => {
 
               {/* REFUND AUDIT SECTION */}
               {(selectedOrder.refund?.status && selectedOrder.refund.status !== 'none' || selectedOrder.status === 'cancelled') && (
-                <div className="bg-purple-50/50 border border-purple-200 rounded-lg p-5 space-y-3">
-                  <div className="flex items-center justify-between border-b border-purple-200 pb-2">
+                <div className={`border rounded-xl p-5 space-y-3 ${isDark ? 'bg-purple-950/20 border-purple-800/40' : 'bg-purple-50/50 border-purple-200'}`}>
+                  <div className={`flex items-center justify-between border-b pb-2 ${isDark ? 'border-purple-800/40' : 'border-purple-200'}`}>
                     <div className="flex items-center gap-2">
-                      <FiDollarSign className="w-5 h-5 text-purple-700" />
-                      <h4 className="text-sm font-bold text-purple-900 uppercase tracking-wider">Refund Management</h4>
+                      <FiDollarSign className="w-5 h-5 text-purple-400" />
+                      <h4 className={`text-sm font-bold uppercase tracking-wider ${isDark ? 'text-purple-300' : 'text-purple-900'}`}>Refund Management</h4>
                     </div>
                     <span className={`px-2.5 py-0.5 text-xs font-bold rounded-full capitalize ${getRefundStatusColor(selectedOrder.refund?.status)}`}>
                       {selectedOrder.refund?.status ? `Status: ${selectedOrder.refund.status}` : 'Pending Refund'}
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-gray-700">
+                  <div className={`grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                     <div>
-                      <p className="text-gray-500">Refund Amount:</p>
-                      <p className="font-bold text-purple-900 text-sm">{formatPrice(selectedOrder.refund?.amount || selectedOrder.totalAmount)}</p>
+                      <p className={isDark ? 'text-gray-400' : 'text-gray-500'}>Refund Amount:</p>
+                      <p className={`font-bold text-sm ${isDark ? 'text-purple-300' : 'text-purple-900'}`}>{formatPrice(selectedOrder.refund?.amount || selectedOrder.totalAmount)}</p>
                     </div>
                     <div>
-                      <p className="text-gray-500">Refund Method:</p>
-                      <p className="font-medium text-gray-900">{selectedOrder.refund?.method || selectedOrder.paymentMethod || 'Original Method'}</p>
+                      <p className={isDark ? 'text-gray-400' : 'text-gray-500'}>Refund Method:</p>
+                      <p className={`font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{selectedOrder.refund?.method || selectedOrder.paymentMethod || 'Original Method'}</p>
                     </div>
                     <div>
-                      <p className="text-gray-500">Reference / Txn ID:</p>
-                      <p className="font-mono text-gray-800">{selectedOrder.refund?.transactionId || 'Pending Assignment'}</p>
+                      <p className={isDark ? 'text-gray-400' : 'text-gray-500'}>Reference / Txn ID:</p>
+                      <p className={`font-mono ${isDark ? 'text-gray-300' : 'text-gray-800'}`}>{selectedOrder.refund?.transactionId || 'Pending Assignment'}</p>
                     </div>
                   </div>
 
                   {selectedOrder.refund?.notes && (
-                    <p className="text-xs text-gray-600 bg-white/70 p-2 rounded border border-purple-100">
+                    <p className={`text-xs p-2 rounded border ${isDark ? 'bg-dark-800/60 border-purple-800/30 text-gray-300' : 'bg-white/70 border-purple-100 text-gray-600'}`}>
                       <strong>Admin Notes:</strong> {selectedOrder.refund.notes}
                     </p>
                   )}
@@ -1003,54 +1047,60 @@ const OrderManager = () => {
               )}
 
               {/* TRACKING AND SHIPPING DETAILS */}
-              <div className="bg-white p-5 border border-gray-200 rounded-lg space-y-3">
-                <div className="flex items-center gap-2 text-gray-700 border-b pb-2">
+              <div className={`p-5 border rounded-xl space-y-3 ${isDark ? 'bg-dark-750 border-dark-700' : 'bg-white border-gray-200'}`}>
+                <div className={`flex items-center gap-2 border-b pb-2 ${isDark ? 'border-dark-700 text-gray-300' : 'border-gray-100 text-gray-700'}`}>
                   <FiTruck className="w-4 h-4 text-[#B8860B]" />
-                  <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Courier & Tracking Details</h4>
+                  <h4 className={`text-sm font-bold uppercase tracking-wider ${isDark ? 'text-white' : 'text-gray-900'}`}>Courier & Tracking Details</h4>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="text-xs font-medium text-gray-600 block mb-1">Carrier Name</label>
+                    <label className={`text-xs font-medium block mb-1 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Carrier Name</label>
                     <input
                       type="text"
                       disabled={selectedOrder.status === 'delivered'}
                       value={trackingForm.carrier}
                       onChange={(e) => setTrackingForm({ ...trackingForm, carrier: e.target.value })}
                       placeholder="e.g. BlueDart / Delhivery / IndiaPost"
-                      className="w-full text-xs px-3 py-2 border rounded focus:ring-1 focus:ring-[#B8860B] disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+                      className={`w-full text-xs px-3 py-2 border rounded focus:ring-1 focus:ring-[#B8860B] transition-colors ${
+                        isDark ? 'bg-dark-700 border-dark-600 text-white placeholder-gray-500 disabled:bg-dark-800 disabled:text-gray-500 disabled:cursor-not-allowed' : 'bg-white border-gray-300 text-gray-900 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed'
+                      }`}
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-600 block mb-1">Tracking Number</label>
+                    <label className={`text-xs font-medium block mb-1 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Tracking Number</label>
                     <input
                       type="text"
                       disabled={selectedOrder.status === 'delivered'}
                       value={trackingForm.trackingNumber}
                       onChange={(e) => setTrackingForm({ ...trackingForm, trackingNumber: e.target.value })}
                       placeholder="e.g. BD123456789IN"
-                      className="w-full text-xs px-3 py-2 border rounded focus:ring-1 focus:ring-[#B8860B] disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+                      className={`w-full text-xs px-3 py-2 border rounded focus:ring-1 focus:ring-[#B8860B] transition-colors ${
+                        isDark ? 'bg-dark-700 border-dark-600 text-white placeholder-gray-500 disabled:bg-dark-800 disabled:text-gray-500 disabled:cursor-not-allowed' : 'bg-white border-gray-300 text-gray-900 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed'
+                      }`}
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-medium text-gray-600 block mb-1">Estimated Delivery Date</label>
+                    <label className={`text-xs font-medium block mb-1 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Estimated Delivery Date</label>
                     <input
                       type="date"
                       disabled={selectedOrder.status === 'delivered'}
                       value={trackingForm.estimatedDelivery}
                       onChange={(e) => setTrackingForm({ ...trackingForm, estimatedDelivery: e.target.value })}
-                      className="w-full text-xs px-3 py-2 border rounded focus:ring-1 focus:ring-[#B8860B] disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+                      className={`w-full text-xs px-3 py-2 border rounded focus:ring-1 focus:ring-[#B8860B] transition-colors ${
+                        isDark ? 'bg-dark-700 border-dark-600 text-white disabled:bg-dark-800 disabled:text-gray-500 disabled:cursor-not-allowed' : 'bg-white border-gray-300 text-gray-900 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed'
+                      }`}
                     />
                   </div>
                 </div>
                 <div className="flex justify-end pt-1">
                   {selectedOrder.status === 'delivered' ? (
-                    <span className="text-xs text-gray-500 font-medium flex items-center gap-1.5 bg-gray-100 px-3 py-1.5 rounded border border-gray-200">
+                    <span className={`text-xs font-medium flex items-center gap-1.5 px-3 py-1.5 rounded border ${isDark ? 'bg-dark-700 border-dark-600 text-gray-400' : 'bg-gray-100 border-gray-200 text-gray-500'}`}>
                       <FiLock className="w-3.5 h-3.5 text-gray-400" /> Tracking Details Locked (Delivered)
                     </span>
                   ) : (
                     <button
                       onClick={handleSaveTracking}
-                      className="px-3 py-1.5 bg-[#1a1a1a] text-white text-xs rounded hover:bg-gray-800"
+                      className="px-3 py-1.5 bg-[#B8860B] hover:bg-[#996515] text-white text-xs rounded transition-colors"
                     >
                       Save Tracking Details
                     </button>
@@ -1060,17 +1110,21 @@ const OrderManager = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="bg-[#FAFAF7] border-t border-gray-200 px-6 py-4 flex items-center justify-between">
+            <div className={`border-t px-6 py-4 flex items-center justify-between ${isDark ? 'bg-dark-750 border-dark-700' : 'bg-[#FAFAF7] border-gray-200'}`}>
               <button
                 onClick={() => openPackingModal(selectedOrder)}
-                className="px-4 py-2 border border-gray-300 text-gray-700 rounded text-xs font-medium hover:bg-gray-100 flex items-center gap-1.5"
+                className={`px-4 py-2 border rounded text-xs font-medium flex items-center gap-1.5 transition-colors ${
+                  isDark ? 'border-dark-600 text-gray-300 hover:bg-dark-700' : 'border-gray-300 text-gray-700 hover:bg-gray-100'
+                }`}
               >
                 <FiPrinter className="w-4 h-4" />
                 Print Packing Slip
               </button>
               <button
                 onClick={() => setDetailModalOpen(false)}
-                className="px-5 py-2 bg-[#1a1a1a] text-white rounded text-xs font-semibold hover:bg-gray-800"
+                className={`px-5 py-2 rounded text-xs font-semibold transition-colors ${
+                  isDark ? 'bg-gold-500 hover:bg-gold-600 text-dark-900' : 'bg-[#1a1a1a] hover:bg-gray-800 text-white'
+                }`}
               >
                 Done
               </button>
@@ -1084,17 +1138,17 @@ const OrderManager = () => {
       {/* ========================================================================= */}
       {cancelModalOpen && selectedOrder && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-2xl max-w-lg w-full border border-red-200 p-6 space-y-4">
-            <div className="flex items-center gap-3 text-red-600 border-b pb-3">
+          <div className={`rounded-xl shadow-2xl max-w-lg w-full border p-6 space-y-4 transition-colors ${isDark ? 'bg-dark-800 border-red-900/40 text-white' : 'bg-white border-red-200 text-gray-900'}`}>
+            <div className={`flex items-center gap-3 border-b pb-3 ${isDark ? 'border-dark-700 text-red-400' : 'border-gray-200 text-red-600'}`}>
               <FiXCircle className="w-6 h-6 flex-shrink-0" />
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Cancel Order #{selectedOrder.orderNumber || selectedOrder._id.slice(-8)}</h3>
-                <p className="text-xs text-gray-500">Order total: {formatPrice(selectedOrder.totalAmount)}</p>
+                <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Cancel Order #{selectedOrder.orderNumber || selectedOrder._id.slice(-8)}</h3>
+                <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Order total: {formatPrice(selectedOrder.totalAmount)}</p>
               </div>
             </div>
 
             {/* Warning rules */}
-            <div className="bg-red-50 p-3.5 rounded border border-red-100 text-xs text-red-800 space-y-1.5">
+            <div className={`p-3.5 rounded border text-xs space-y-1.5 ${isDark ? 'bg-red-950/30 border-red-800/40 text-red-300' : 'bg-red-50 border-red-100 text-red-800'}`}>
               <p className="font-bold flex items-center gap-1.5">
                 <FiShield className="w-4 h-4" />
                 Cancellation Effects:
@@ -1113,11 +1167,13 @@ const OrderManager = () => {
 
             <form onSubmit={handleCancelSubmit} className="space-y-3.5 text-xs">
               <div>
-                <label className="font-semibold text-gray-700 block mb-1">Reason for Cancellation</label>
+                <label className={`font-semibold block mb-1 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>Reason for Cancellation</label>
                 <select
                   value={cancelForm.reason}
                   onChange={(e) => setCancelForm({ ...cancelForm, reason: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-red-500"
+                  className={`w-full px-3 py-2 border rounded focus:ring-1 focus:ring-red-500 transition-colors ${
+                    isDark ? 'bg-dark-700 border-dark-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 >
                   <option value="Customer requested cancellation">Customer requested cancellation</option>
                   <option value="Out of stock / Damaged artifact">Out of stock / Damaged artifact</option>
@@ -1129,23 +1185,27 @@ const OrderManager = () => {
               </div>
 
               <div>
-                <label className="font-semibold text-gray-700 block mb-1">Additional Notes / Details</label>
+                <label className={`font-semibold block mb-1 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>Additional Notes / Details</label>
                 <input
                   type="text"
                   placeholder="Provide specific notes or customer remarks..."
                   value={cancelForm.customReason}
                   onChange={(e) => setCancelForm({ ...cancelForm, customReason: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-red-500"
+                  className={`w-full px-3 py-2 border rounded focus:ring-1 focus:ring-red-500 transition-colors ${
+                    isDark ? 'bg-dark-700 border-dark-600 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                  }`}
                 />
               </div>
 
               {selectedOrder.paymentStatus === 'paid' && (
                 <div>
-                  <label className="font-semibold text-gray-700 block mb-1">Refund Method</label>
+                  <label className={`font-semibold block mb-1 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>Refund Method</label>
                   <select
                     value={cancelForm.refundMethod}
                     onChange={(e) => setCancelForm({ ...cancelForm, refundMethod: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-red-500"
+                    className={`w-full px-3 py-2 border rounded focus:ring-1 focus:ring-red-500 transition-colors ${
+                      isDark ? 'bg-dark-700 border-dark-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+                    }`}
                   >
                     <option value="Original Payment Method">Original Payment Method (Razorpay / UPI)</option>
                     <option value="UPI">UPI</option>
@@ -1157,11 +1217,13 @@ const OrderManager = () => {
                 </div>
               )}
 
-              <div className="pt-3 border-t flex items-center justify-end gap-3">
+              <div className={`pt-3 border-t flex items-center justify-end gap-3 ${isDark ? 'border-dark-700' : 'border-gray-200'}`}>
                 <button
                   type="button"
                   onClick={() => setCancelModalOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded text-gray-700 font-medium hover:bg-gray-50"
+                  className={`px-4 py-2 border rounded font-medium transition-colors ${
+                    isDark ? 'border-dark-600 text-gray-300 hover:bg-dark-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
                 >
                   Go Back
                 </button>
@@ -1182,34 +1244,38 @@ const OrderManager = () => {
       {/* ========================================================================= */}
       {refundModalOpen && selectedOrder && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-2xl max-w-md w-full border border-purple-200 p-6 space-y-4">
-            <div className="flex items-center gap-3 text-purple-700 border-b pb-3">
+          <div className={`rounded-xl shadow-2xl max-w-md w-full border p-6 space-y-4 transition-colors ${isDark ? 'bg-dark-800 border-purple-900/40 text-white' : 'bg-white border-purple-200 text-gray-900'}`}>
+            <div className={`flex items-center gap-3 border-b pb-3 ${isDark ? 'border-dark-700 text-purple-400' : 'border-gray-200 text-purple-700'}`}>
               <FiDollarSign className="w-6 h-6 flex-shrink-0" />
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Process / Update Refund</h3>
-                <p className="text-xs text-gray-500">Order #{selectedOrder.orderNumber || selectedOrder._id.slice(-8)}</p>
+                <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Process / Update Refund</h3>
+                <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Order #{selectedOrder.orderNumber || selectedOrder._id.slice(-8)}</p>
               </div>
             </div>
 
             <form onSubmit={handleRefundSubmit} className="space-y-3.5 text-xs">
               <div>
-                <label className="font-semibold text-gray-700 block mb-1">Refund Amount (₹)</label>
+                <label className={`font-semibold block mb-1 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>Refund Amount (₹)</label>
                 <input
                   type="number"
                   required
                   min="1"
                   value={refundForm.refundAmount}
                   onChange={(e) => setRefundForm({ ...refundForm, refundAmount: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-purple-500 font-bold text-sm"
+                  className={`w-full px-3 py-2 border rounded focus:ring-1 focus:ring-purple-500 font-bold text-sm transition-colors ${
+                    isDark ? 'bg-dark-700 border-dark-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 />
               </div>
 
               <div>
-                <label className="font-semibold text-gray-700 block mb-1">Refund Lifecycle Status</label>
+                <label className={`font-semibold block mb-1 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>Refund Lifecycle Status</label>
                 <select
                   value={refundForm.refundStatus}
                   onChange={(e) => setRefundForm({ ...refundForm, refundStatus: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-purple-500"
+                  className={`w-full px-3 py-2 border rounded focus:ring-1 focus:ring-purple-500 transition-colors ${
+                    isDark ? 'bg-dark-700 border-dark-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 >
                   <option value="pending">Refund Pending (Queued)</option>
                   <option value="processing">Refund Processing (Bank initiated)</option>
@@ -1219,11 +1285,13 @@ const OrderManager = () => {
               </div>
 
               <div>
-                <label className="font-semibold text-gray-700 block mb-1">Refund Method</label>
+                <label className={`font-semibold block mb-1 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>Refund Method</label>
                 <select
                   value={refundForm.refundMethod}
                   onChange={(e) => setRefundForm({ ...refundForm, refundMethod: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-purple-500"
+                  className={`w-full px-3 py-2 border rounded focus:ring-1 focus:ring-purple-500 transition-colors ${
+                    isDark ? 'bg-dark-700 border-dark-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 >
                   <option value="UPI">UPI Transfer</option>
                   <option value="Card">Card Reversal</option>
@@ -1235,32 +1303,38 @@ const OrderManager = () => {
               </div>
 
               <div>
-                <label className="font-semibold text-gray-700 block mb-1">Refund Transaction / UTR / Reference ID</label>
+                <label className={`font-semibold block mb-1 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>Refund Transaction / UTR / Reference ID</label>
                 <input
                   type="text"
                   placeholder="e.g. UTR1293847291 or rzp_ref_123"
                   value={refundForm.refundTransactionId}
                   onChange={(e) => setRefundForm({ ...refundForm, refundTransactionId: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-purple-500 font-mono"
+                  className={`w-full px-3 py-2 border rounded focus:ring-1 focus:ring-purple-500 font-mono transition-colors ${
+                    isDark ? 'bg-dark-700 border-dark-600 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                  }`}
                 />
               </div>
 
               <div>
-                <label className="font-semibold text-gray-700 block mb-1">Admin Notes</label>
+                <label className={`font-semibold block mb-1 ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>Admin Notes</label>
                 <textarea
                   rows="2"
                   placeholder="Notes on transaction or customer communication..."
                   value={refundForm.refundNotes}
                   onChange={(e) => setRefundForm({ ...refundForm, refundNotes: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded focus:ring-1 focus:ring-purple-500"
+                  className={`w-full px-3 py-2 border rounded focus:ring-1 focus:ring-purple-500 transition-colors ${
+                    isDark ? 'bg-dark-700 border-dark-600 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                  }`}
                 />
               </div>
 
-              <div className="pt-3 border-t flex items-center justify-end gap-3">
+              <div className={`pt-3 border-t flex items-center justify-end gap-3 ${isDark ? 'border-dark-700' : 'border-gray-200'}`}>
                 <button
                   type="button"
                   onClick={() => setRefundModalOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded text-gray-700 font-medium hover:bg-gray-50"
+                  className={`px-4 py-2 border rounded font-medium transition-colors ${
+                    isDark ? 'border-dark-600 text-gray-300 hover:bg-dark-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
                 >
                   Cancel
                 </button>
@@ -1281,41 +1355,50 @@ const OrderManager = () => {
       {/* ========================================================================= */}
       {packingModalOpen && selectedOrder && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-lg shadow-2xl max-w-2xl w-full border border-gray-200 overflow-hidden">
+          <div className={`rounded-xl shadow-2xl max-w-2xl w-full border overflow-hidden transition-colors ${isDark ? 'bg-dark-800 border-dark-700' : 'bg-white border-gray-200'}`}>
             {/* Action Bar (Not Printed) */}
-            <div className="bg-[#FAFAF7] px-6 py-3 border-b flex items-center justify-between print:hidden">
+            <div className={`px-6 py-3 border-b flex items-center justify-between print:hidden ${isDark ? 'bg-dark-750 border-dark-700' : 'bg-[#FAFAF7] border-gray-200'}`}>
               <div className="flex items-center gap-2">
                 <FiPackage className="w-5 h-5 text-[#B8860B]" />
-                <h3 className="font-serif font-bold text-gray-900">Packing View & Dispatch Slip</h3>
+                <h3 className={`font-serif font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Packing View & Dispatch Slip</h3>
               </div>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => window.print()}
-                  className="px-3 py-1.5 bg-[#1a1a1a] text-white rounded text-xs font-semibold hover:bg-gray-800 flex items-center gap-1.5 shadow-sm"
+                  className={`px-3 py-1.5 rounded text-xs font-semibold flex items-center gap-1.5 shadow-sm transition-colors ${
+                    isDark ? 'bg-gold-500 hover:bg-gold-600 text-dark-900' : 'bg-[#1a1a1a] hover:bg-gray-800 text-white'
+                  }`}
                 >
                   <FiPrinter className="w-4 h-4" />
                   Print Slip
                 </button>
                 <button
                   onClick={() => setPackingModalOpen(false)}
-                  className="text-gray-400 hover:text-gray-600 p-1"
+                  className={`p-1 rounded-full transition-colors ${isDark ? 'text-gray-400 hover:text-white' : 'text-gray-400 hover:text-gray-600'}`}
                 >
                   ✕
                 </button>
               </div>
             </div>
 
-            {/* Printable Packing Sheet */}
-            <div className="p-8 space-y-6 text-gray-900 bg-white" id="packing-slip">
+            {/* Printable Packing Sheet (Pure White Background & Black Text for crystal clear print & display) */}
+            <div className="p-8 space-y-6 !text-gray-900 bg-white" id="packing-slip" style={{ color: '#111827', backgroundColor: '#ffffff' }}>
               {/* Slip Header */}
               <div className="flex justify-between items-start border-b-2 border-gray-900 pb-4">
-                <div>
-                  <h2 className="text-2xl font-serif tracking-wider font-bold">COIN INDIA</h2>
-                  <p className="text-xs text-gray-500 uppercase tracking-widest mt-0.5">Numismatic Fulfillment Slip</p>
+                <div className="flex items-center gap-3">
+                  <img 
+                    src={STATIC_IMAGES.logo.main} 
+                    alt="Coinomart" 
+                    className="h-11 w-auto max-w-[160px] object-contain rounded" 
+                  />
+                  <div>
+                    <h2 className="text-2xl font-serif tracking-wider font-bold !text-black" style={{ color: '#000000' }}>COINOMART</h2>
+                    <p className="text-xs !text-gray-700 uppercase tracking-widest mt-0.5 font-semibold" style={{ color: '#374151' }}>Numismatic Fulfillment Slip</p>
+                  </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-bold font-mono">ORDER #{selectedOrder.orderNumber || selectedOrder._id.slice(-8).toUpperCase()}</p>
-                  <p className="text-xs text-gray-500">Date: {formatDate(selectedOrder.createdAt)}</p>
+                  <p className="text-lg font-bold font-mono !text-black" style={{ color: '#000000' }}>ORDER #{selectedOrder.orderNumber || selectedOrder._id.slice(-8).toUpperCase()}</p>
+                  <p className="text-xs !text-gray-600 font-medium" style={{ color: '#4b5563' }}>Date: {formatDate(selectedOrder.createdAt)}</p>
                   <span className={`inline-block mt-1 px-2.5 py-0.5 text-xs font-bold rounded-full uppercase ${getStatusColor(selectedOrder.status)}`}>
                     {selectedOrder.status}
                   </span>
@@ -1365,7 +1448,7 @@ const OrderManager = () => {
                             <img
                               src={item.coinImage || getImageUrl(item.coin?.images)}
                               alt={item.coinName}
-                              className={`w-10 h-10 object-contain rounded border p-0.5 ${isDark ? '' : 'mix-blend-multiply'}`}
+                              className="w-10 h-10 object-contain rounded border p-0.5 mix-blend-multiply bg-white"
                             />
                             <div>
                               <p className="font-bold text-gray-900 text-sm">{item.coinName}</p>
@@ -1400,8 +1483,8 @@ const OrderManager = () => {
             </div>
 
             {/* Fast Workflow Buttons in Packing View */}
-            <div className="bg-[#FAFAF7] border-t px-6 py-4 flex items-center justify-between print:hidden">
-              <span className="text-xs text-gray-500">Update fulfillment status:</span>
+            <div className={`border-t px-6 py-4 flex items-center justify-between print:hidden ${isDark ? 'bg-dark-750 border-dark-700' : 'bg-[#FAFAF7] border-gray-200'}`}>
+              <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Update fulfillment status:</span>
               <div className="flex gap-2">
                 {selectedOrder.status === 'confirmed' && (
                   <button

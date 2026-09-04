@@ -164,51 +164,51 @@ const RefundManager = () => {
       {stats && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Pending Refunds */}
-          <div className={`p-4 border rounded-xl shadow-sm ${
-            isDark ? 'bg-dark-800 border-amber-500/20' : 'bg-amber-50/50 border-amber-200'
+          <div className={`p-4 border rounded-xl shadow-sm transition-colors ${
+            isDark ? 'bg-dark-800 border-amber-500/30' : 'bg-amber-50/50 border-amber-200'
           }`}>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-amber-700">Pending Refunds</span>
-              <FiClock className="w-5 h-5 text-amber-600" />
+              <span className={`text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>Pending Refunds</span>
+              <FiClock className={`w-5 h-5 ${isDark ? 'text-amber-400' : 'text-amber-600'}`} />
             </div>
-            <p className="text-2xl font-serif font-bold text-amber-900 mt-2">{stats.pendingCount || 0} orders</p>
-            <p className="text-xs text-amber-700 mt-1 font-medium">{formatPrice(stats.pendingTotal || 0)} awaiting payout</p>
+            <p className={`text-2xl font-serif font-bold mt-2 ${isDark ? 'text-amber-300' : 'text-amber-900'}`}>{stats.pendingCount || 0} orders</p>
+            <p className={`text-xs mt-1 font-medium ${isDark ? 'text-amber-400/90' : 'text-amber-700'}`}>{formatPrice(stats.pendingTotal || 0)} awaiting payout</p>
           </div>
 
           {/* Processing Refunds */}
-          <div className={`p-4 border rounded-xl shadow-sm ${
-            isDark ? 'bg-dark-800 border-indigo-500/20' : 'bg-indigo-50/50 border-indigo-200'
+          <div className={`p-4 border rounded-xl shadow-sm transition-colors ${
+            isDark ? 'bg-dark-800 border-indigo-500/30' : 'bg-indigo-50/50 border-indigo-200'
           }`}>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-indigo-700">Processing Refunds</span>
-              <FiRotateCcw className="w-5 h-5 text-indigo-600" />
+              <span className={`text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-indigo-400' : 'text-indigo-700'}`}>Processing Refunds</span>
+              <FiRotateCcw className={`w-5 h-5 ${isDark ? 'text-indigo-400' : 'text-indigo-600'}`} />
             </div>
-            <p className="text-2xl font-serif font-bold text-indigo-900 mt-2">{stats.processingCount || 0} orders</p>
-            <p className="text-xs text-indigo-700 mt-1 font-medium">{formatPrice(stats.processingTotal || 0)} in bank queue</p>
+            <p className={`text-2xl font-serif font-bold mt-2 ${isDark ? 'text-indigo-300' : 'text-indigo-900'}`}>{stats.processingCount || 0} orders</p>
+            <p className={`text-xs mt-1 font-medium ${isDark ? 'text-indigo-400/90' : 'text-indigo-700'}`}>{formatPrice(stats.processingTotal || 0)} in bank queue</p>
           </div>
 
           {/* Completed Refunds */}
-          <div className={`p-4 border rounded-xl shadow-sm ${
-            isDark ? 'bg-dark-800 border-emerald-500/20' : 'bg-emerald-50/50 border-emerald-200'
+          <div className={`p-4 border rounded-xl shadow-sm transition-colors ${
+            isDark ? 'bg-dark-800 border-emerald-500/30' : 'bg-emerald-50/50 border-emerald-200'
           }`}>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-emerald-700">Completed Refunds</span>
-              <FiCheckCircle className="w-5 h-5 text-emerald-600" />
+              <span className={`text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>Completed Refunds</span>
+              <FiCheckCircle className={`w-5 h-5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'}`} />
             </div>
-            <p className="text-2xl font-serif font-bold text-emerald-900 mt-2">{stats.completedCount || 0} orders</p>
-            <p className="text-xs text-emerald-700 mt-1 font-medium">Successfully refunded</p>
+            <p className={`text-2xl font-serif font-bold mt-2 ${isDark ? 'text-emerald-300' : 'text-emerald-900'}`}>{stats.completedCount || 0} orders</p>
+            <p className={`text-xs mt-1 font-medium ${isDark ? 'text-emerald-400/90' : 'text-emerald-700'}`}>Successfully refunded</p>
           </div>
 
           {/* Total Refunded Amount */}
-          <div className={`p-4 border rounded-xl shadow-sm ${
-            isDark ? 'bg-dark-800 border-purple-500/20' : 'bg-purple-50/50 border-purple-200'
+          <div className={`p-4 border rounded-xl shadow-sm transition-colors ${
+            isDark ? 'bg-dark-800 border-purple-500/30' : 'bg-purple-50/50 border-purple-200'
           }`}>
             <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold uppercase tracking-wider text-purple-700">Total Refunded Amount</span>
-              <FiDollarSign className="w-5 h-5 text-purple-600" />
+              <span className={`text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-purple-400' : 'text-purple-700'}`}>Total Refunded Amount</span>
+              <FiDollarSign className={`w-5 h-5 ${isDark ? 'text-purple-400' : 'text-purple-600'}`} />
             </div>
-            <p className="text-2xl font-serif font-bold text-purple-900 mt-2">{formatPrice(stats.completedTotal || 0)}</p>
-            <p className="text-xs text-purple-700 mt-1 font-medium">Lifetime payout volume</p>
+            <p className={`text-2xl font-serif font-bold mt-2 ${isDark ? 'text-purple-300' : 'text-purple-900'}`}>{formatPrice(stats.completedTotal || 0)}</p>
+            <p className={`text-xs mt-1 font-medium ${isDark ? 'text-purple-400/90' : 'text-purple-700'}`}>Lifetime payout volume</p>
           </div>
         </div>
       )}

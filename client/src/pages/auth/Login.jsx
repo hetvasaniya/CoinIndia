@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
+import { STATIC_IMAGES } from '../../data/staticImages';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -41,19 +42,13 @@ const Login = () => {
       }`}>
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex flex-col items-center mb-4 group">
-            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gold-500/50 shadow-lg bg-dark-800 p-0.5 transition-transform group-hover:scale-105">
-              <img 
-                src="https://res.cloudinary.com/elitehomes/image/upload/v1788148596/nedeqh3gfpeilb1sgiv7.png" 
-                alt="CoinIndia Logo" 
-                className="w-full h-full object-cover rounded-full" 
-              />
-            </div>
-            <span className="text-2xl font-serif font-bold tracking-wider mt-2">
-              <span className={isDark ? 'text-white' : 'text-gray-900'}>Coin</span>
-              <span className="text-gold-500">India</span>
-            </span>
+            <img 
+              src={STATIC_IMAGES.logo.main} 
+              alt="Coinomart" 
+              className="h-16 w-auto max-w-[200px] object-contain rounded transition-transform group-hover:scale-105" 
+            />
           </Link>
-          <h2 className={`text-2xl font-serif ${isDark ? 'text-white' : 'text-gray-900'}`}>Welcome Back</h2>
+          <h2 className={`text-2xl font-serif mt-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>Welcome Back</h2>
           <p className={`mt-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Please sign in to your account</p>
         </div>
         
@@ -62,7 +57,7 @@ const Login = () => {
             label="Email Address"
             type="email"
             required
-            placeholder="e.g., admin@coinindia.com or user@example.com"
+            placeholder="e.g., admin@coinomart.com or user@example.com"
             value={formData.email}
             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           />

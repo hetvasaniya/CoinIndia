@@ -27,7 +27,7 @@ const register = async (req, res) => {
       // Send welcome email asynchronously without blocking registration response
       sendEmail({
         to: user.email,
-        subject: 'Welcome to Coin India',
+        subject: 'Welcome to Coinomart',
         html: welcomeEmail(user.name),
       }).catch((err) => console.error('Welcome email failed to send:', err.message));
 

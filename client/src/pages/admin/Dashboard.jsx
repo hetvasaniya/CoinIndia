@@ -33,7 +33,8 @@ const Dashboard = () => {
           totalCountries: data.totalCountries !== undefined ? data.totalCountries : 0,
           totalMints: data.totalMints !== undefined ? data.totalMints : 0,
           recentCoins: data.recentCoins || [],
-          recentOrders: data.recentOrders || []
+          recentOrders: data.recentOrders || [],
+          dailyAnalytics: data.dailyAnalytics || []
         });
       }
     } catch (error) {
@@ -42,7 +43,7 @@ const Dashboard = () => {
         totalRevenue: 0, grossRevenue: 0, cancelledOrderAmount: 0, refundedAmount: 0,
         netRevenue: 0, totalOrders: 0, completedOrders: 0, pendingOrdersCount: 0,
         cancelledOrdersCount: 0, totalCoins: 0, totalCategories: 0, totalCountries: 0,
-        totalMints: 0, recentCoins: [], recentOrders: []
+        totalMints: 0, recentCoins: [], recentOrders: [], dailyAnalytics: []
       });
     } finally {
       setLoading(false);
@@ -52,6 +53,12 @@ const Dashboard = () => {
   if (loading) return <Loader fullScreen />;
 
   const cardBg = isDark ? 'bg-dark-800 border-dark-700' : 'bg-white border-gray-200';
+
+  const dailyData = stats?.dailyAnalytics || [];
+  const maxRevenue = Math.max(...dailyData.map(d => d.revenue || 0), 1000);
+  const maxOrders = Math.max(...dailyData.map(d => d.orders || 0), 5);
+  const total7DayRevenue = dailyData.reduce((acc, curr) => acc + (curr.revenue || 0), 0);
+  const total7DayOrders = dailyData.reduce((acc, curr) => acc + (curr.orders || 0), 0);
 
   return (
     <div className="space-y-8">
@@ -109,49 +116,110 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Charts Row */}
+      {/* Dynamic Day-to-Day Charts Row */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+        {/* Graph 1: Daily Revenue Trend */}
         <div className={`border rounded-xl p-6 shadow-sm ${cardBg}`}>
-          <h2 className={`text-lg font-serif mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>Revenue Over Time</h2>
-          <div className="h-64 flex items-end justify-between space-x-3 pt-6 pb-2">
-            {[40, 60, 45, 80, 55, 90, 75, 100].map((height, i) => (
-              <div key={i} className="w-full h-full flex flex-col items-center justify-end group relative">
-                <div className={`opacity-0 group-hover:opacity-100 absolute -top-8 text-xs py-1 px-2 rounded shadow-md transition-opacity pointer-events-none z-10 ${
-                  isDark ? 'bg-dark-600 text-white' : 'bg-gray-800 text-white'
-                }`}>
-                  ₹{(height * 1500).toLocaleString()}
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className={`text-lg font-serif ${isDark ? 'text-white' : 'text-gray-900'}`}>Daily Revenue Trend</h2>
+              <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Last 7 days daily order sales</p>
+            </div>
+            <span className="text-xs px-2.5 py-1 rounded-full font-bold bg-gold-500/10 text-gold-500 border border-gold-500/20">
+              7D: {formatPrice(total7DayRevenue)}
+            </span>
+          </div>
+
+          <div className="h-64 flex items-end justify-between space-x-2 sm:space-x-3 pt-6 pb-2">
+            {dailyData.map((day, i) => {
+              const heightPct = Math.max(Math.round(((day.revenue || 0) / maxRevenue) * 100), (day.revenue > 0 ? 12 : 4));
+              return (
+                <div key={i} className="w-full h-full flex flex-col items-center justify-end group relative">
+                  {/* Tooltip */}
+                  <div className={`opacity-0 group-hover:opacity-100 absolute -top-10 text-xs py-1.5 px-2.5 rounded shadow-lg transition-all duration-200 pointer-events-none z-20 whitespace-nowrap text-center ${
+                    isDark ? 'bg-dark-900 border border-dark-600 text-white' : 'bg-gray-900 text-white'
+                  }`}>
+                    <p className="font-bold text-gold-400">{formatPrice(day.revenue)}</p>
+                    <p className="text-[10px] text-gray-300">{day.label}</p>
+                  </div>
+                  
+                  {/* Bar */}
+                  <div className="w-full flex-1 flex items-end justify-center">
+                    <div 
+                      className={`w-full max-w-[32px] rounded-t-md transition-all duration-500 group-hover:scale-105 shadow-sm ${
+                        day.revenue > 0 
+                          ? 'bg-gradient-to-t from-gold-600 via-gold-500 to-gold-400 brightness-100' 
+                          : isDark ? 'bg-dark-700/60' : 'bg-gray-200'
+                      }`}
+                      style={{ height: `${heightPct}%`, minHeight: '6px' }}
+                    ></div>
+                  </div>
+
+                  {/* Day Label */}
+                  <div className="text-center mt-3">
+                    <span className={`text-xs block font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {day.dayName}
+                    </span>
+                    <span className="text-[10px] text-gray-500 block">
+                      {day.shortLabel}
+                    </span>
+                  </div>
                 </div>
-                <div className="w-full flex-1 flex items-end justify-center">
-                  <div 
-                    className="w-full max-w-[28px] bg-gradient-to-t from-gold-600 via-gold-500 to-gold-400 rounded-t-md transition-all duration-500 hover:brightness-110 shadow-sm" 
-                    style={{ height: `${height}%`, minHeight: '4px' }}
-                  ></div>
-                </div>
-                <span className={`text-xs mt-3 font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>W{i+1}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
         
+        {/* Graph 2: Day-to-Day Order Volume */}
         <div className={`border rounded-xl p-6 shadow-sm ${cardBg}`}>
-          <h2 className="text-lg font-serif text-gold-500 mb-6">Order Volume</h2>
-          <div className="h-64 flex items-end justify-between space-x-3 pt-6 pb-2">
-            {[30, 45, 35, 60, 40, 70, 55, 80].map((height, i) => (
-              <div key={i} className="w-full h-full flex flex-col items-center justify-end group relative">
-                <div className={`opacity-0 group-hover:opacity-100 absolute -top-8 text-xs py-1 px-2 rounded shadow-md transition-opacity pointer-events-none z-10 ${
-                  isDark ? 'bg-dark-600 text-white' : 'bg-gray-800 text-white'
-                }`}>
-                  {Math.round(height * 0.4)} orders
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className={`text-lg font-serif ${isDark ? 'text-white' : 'text-gray-900'}`}>Day-to-Day Order Volume</h2>
+              <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Last 7 days customer orders placed</p>
+            </div>
+            <span className="text-xs px-2.5 py-1 rounded-full font-bold bg-blue-500/10 text-blue-500 border border-blue-500/20">
+              7D: {total7DayOrders} Orders
+            </span>
+          </div>
+
+          <div className="h-64 flex items-end justify-between space-x-2 sm:space-x-3 pt-6 pb-2">
+            {dailyData.map((day, i) => {
+              const heightPct = Math.max(Math.round(((day.orders || 0) / maxOrders) * 100), (day.orders > 0 ? 12 : 4));
+              return (
+                <div key={i} className="w-full h-full flex flex-col items-center justify-end group relative">
+                  {/* Tooltip */}
+                  <div className={`opacity-0 group-hover:opacity-100 absolute -top-10 text-xs py-1.5 px-2.5 rounded shadow-lg transition-all duration-200 pointer-events-none z-20 whitespace-nowrap text-center ${
+                    isDark ? 'bg-dark-900 border border-dark-600 text-white' : 'bg-gray-900 text-white'
+                  }`}>
+                    <p className="font-bold text-blue-400">{day.orders} order{day.orders !== 1 ? 's' : ''}</p>
+                    <p className="text-[10px] text-emerald-400">{day.deliveredOrders} delivered</p>
+                    <p className="text-[10px] text-gray-300">{day.label}</p>
+                  </div>
+                  
+                  {/* Bar */}
+                  <div className="w-full flex-1 flex items-end justify-center">
+                    <div 
+                      className={`w-full max-w-[32px] rounded-t-md transition-all duration-500 group-hover:scale-105 shadow-sm ${
+                        day.orders > 0 
+                          ? 'bg-gradient-to-t from-blue-600 via-indigo-500 to-cyan-400' 
+                          : isDark ? 'bg-dark-700/60' : 'bg-gray-200'
+                      }`}
+                      style={{ height: `${heightPct}%`, minHeight: '6px' }}
+                    ></div>
+                  </div>
+
+                  {/* Day Label */}
+                  <div className="text-center mt-3">
+                    <span className={`text-xs block font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {day.dayName}
+                    </span>
+                    <span className="text-[10px] text-gray-500 block">
+                      {day.shortLabel}
+                    </span>
+                  </div>
                 </div>
-                <div className="w-full flex-1 flex items-end justify-center">
-                  <div 
-                    className="w-full max-w-[28px] bg-gradient-to-t from-amber-600 via-gold-500 to-amber-400 rounded-t-md transition-all duration-500 hover:brightness-110 shadow-sm" 
-                    style={{ height: `${height}%`, minHeight: '4px' }}
-                  ></div>
-                </div>
-                <span className={`text-xs mt-3 font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>W{i+1}</span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>

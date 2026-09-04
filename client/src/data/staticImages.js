@@ -1,6 +1,6 @@
 /**
  * ==============================================================================
- * CoinIndia Static Visual Assets & Image Repository
+ * Coinomart Static Visual Assets & Image Repository
  * ==============================================================================
  * 
  * NOTE: These images are used STRICTLY for static website details, branding,
@@ -12,13 +12,15 @@
  * or CDN / Cloudinary URLs anytime.
  */
 
+export const LOGO_URL = 'https://res.cloudinary.com/elitehomes/image/upload/v1788518687/guxrfl0tpekpnjbshwm2.jpg';
+
 export const STATIC_IMAGES = {
   // Brand & Logo
   logo: {
-    main: 'https://res.cloudinary.com/elitehomes/image/upload/v1788148596/nedeqh3gfpeilb1sgiv7.png',
-    symbol: 'https://res.cloudinary.com/elitehomes/image/upload/v1788148596/nedeqh3gfpeilb1sgiv7.png',
-    emblem: 'https://res.cloudinary.com/elitehomes/image/upload/v1788148596/nedeqh3gfpeilb1sgiv7.png',
-    sealGold: 'https://res.cloudinary.com/elitehomes/image/upload/v1788148596/nedeqh3gfpeilb1sgiv7.png',
+    main: LOGO_URL,
+    symbol: LOGO_URL,
+    emblem: LOGO_URL,
+    sealGold: LOGO_URL,
   },
 
   // Hero & Homepage Sections

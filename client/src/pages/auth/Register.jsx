@@ -5,6 +5,7 @@ import { useTheme } from '../../context/ThemeContext';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import toast from 'react-hot-toast';
+import { STATIC_IMAGES } from '../../data/staticImages';
 
 const Register = () => {
   const [formData, setFormData] = useState({ 
@@ -45,20 +46,14 @@ const Register = () => {
       }`}>
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex flex-col items-center mb-4 group">
-            <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-gold-500/50 shadow-lg bg-dark-800 p-0.5 transition-transform group-hover:scale-105">
-              <img 
-                src="https://res.cloudinary.com/elitehomes/image/upload/v1788148596/nedeqh3gfpeilb1sgiv7.png" 
-                alt="CoinIndia Logo" 
-                className="w-full h-full object-cover rounded-full" 
-              />
-            </div>
-            <span className="text-2xl font-serif font-bold tracking-wider mt-2">
-              <span className={isDark ? 'text-white' : 'text-gray-900'}>Coin</span>
-              <span className="text-gold-500">India</span>
-            </span>
+            <img 
+              src={STATIC_IMAGES.logo.main} 
+              alt="Coinomart" 
+              className="h-16 w-auto max-w-[200px] object-contain rounded transition-transform group-hover:scale-105" 
+            />
           </Link>
-          <h2 className={`text-2xl font-serif ${isDark ? 'text-white' : 'text-gray-900'}`}>Create Account</h2>
-          <p className={`mt-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Join Coin India today</p>
+          <h2 className={`text-2xl font-serif mt-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>Create Account</h2>
+          <p className={`mt-2 text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>Join Coinomart today</p>
         </div>
         
         <form className="space-y-4" onSubmit={handleSubmit}>

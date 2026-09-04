@@ -28,26 +28,32 @@ const Inventory = () => {
     }
   };
 
+  const [updatingId, setUpdatingId] = useState(null);
+
   const handleQtyChange = (id, val) => {
     setEditQty({ ...editQty, [id]: val });
   };
 
   const updateQuantity = async (id) => {
-    const qty = parseInt(editQty[id], 10);
+    const rawVal = editQty[id];
+    const qty = parseInt(rawVal, 10);
     if (isNaN(qty) || qty < 0) {
-      toast.error('Invalid quantity');
+      toast.error('Please enter a valid non-negative quantity number');
       return;
     }
+    setUpdatingId(id);
     try {
       await adminService.updateQuantity(id, qty);
-      toast.success('Quantity updated');
+      toast.success(`Quantity updated to ${qty}`);
       const newInventory = inventory.map(item => item._id === id ? { ...item, quantity: qty } : item);
       setInventory(newInventory);
       const newEditQty = { ...editQty };
       delete newEditQty[id];
       setEditQty(newEditQty);
     } catch (error) {
-      toast.error('Failed to update quantity');
+      toast.error(error.response?.data?.message || 'Failed to update quantity');
+    } finally {
+      setUpdatingId(null);
     }
   };
 
@@ -129,10 +135,15 @@ const Inventory = () => {
                         />
                         <button 
                           onClick={() => updateQuantity(item._id)}
-                          disabled={editQty[item._id] === undefined || editQty[item._id] == item.quantity}
-                          className="bg-gold-500 text-white px-3 py-1 border border-gold-500 rounded-r-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gold-600 transition-colors"
+                          disabled={updatingId === item._id || editQty[item._id] === undefined || editQty[item._id] == item.quantity}
+                          className="bg-gold-500 text-white px-3 py-1 border border-gold-500 rounded-r-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gold-600 transition-colors flex items-center justify-center min-w-[36px]"
+                          title="Save quantity"
                         >
-                          <FiCheck />
+                          {updatingId === item._id ? (
+                            <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                          ) : (
+                            <FiCheck className="w-4 h-4" />
+                          )}
                         </button>
                       </div>
                     </td>

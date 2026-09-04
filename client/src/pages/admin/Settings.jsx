@@ -21,7 +21,7 @@ const Settings = () => {
   // Settings State
   const [settings, setSettings] = useState({
     theme: 'dark',
-    supportEmail: 'support@coinindia.com',
+    supportEmail: 'support@coinomart.com',
     contactFormEnabled: true,
     contactFormHeading: 'Get in Touch with Numismatic Support',
     contactFormDescription: 'Have questions about rare coin authenticity, historical provenance, or order tracking? Send us a message below.',
@@ -288,7 +288,7 @@ const Settings = () => {
                   label="Technical Support Email"
                   type="email"
                   required
-                  placeholder="e.g., support@coinindia.com"
+                  placeholder="e.g., support@coinomart.com"
                   value={settings.supportEmail}
                   onChange={(e) => setSettings({ ...settings, supportEmail: e.target.value })}
                 />

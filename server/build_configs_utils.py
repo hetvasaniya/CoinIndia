@@ -91,7 +91,7 @@ module.exports = generateToken;
 """
 
 files['utils/emailTemplates.js'] = """const welcomeEmail = (name) => `
-  <h1>Welcome to Coin India, ${name}!</h1>
+  <h1>Welcome to Coinomart, ${name}!</h1>
   <p>We are thrilled to have you on board. Start exploring our collection of rare and historic coins today.</p>
 `;
 

@@ -95,6 +95,20 @@
     color: var(--text-primary);
   }
 
+  /* Printable Packing Slip & Invoice Contrast Fix */
+  #packing-slip, 
+  #packing-slip * {
+    color: #111827;
+  }
+  #packing-slip h1, 
+  #packing-slip h2, 
+  #packing-slip h3, 
+  #packing-slip h4, 
+  #packing-slip strong,
+  #packing-slip b {
+    color: #000000 !important;
+  }
+
   /* Custom scrollbar */
   ::-webkit-scrollbar {
     width: 8px;

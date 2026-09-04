@@ -1,1 +1,1 @@
-export { STATIC_IMAGES, default } from './staticImages';
+export { STATIC_IMAGES, LOGO_URL, default } from './staticImages';

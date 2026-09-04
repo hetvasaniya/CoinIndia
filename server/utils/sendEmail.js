@@ -7,7 +7,7 @@ const sendEmail = async ({ to, subject, html }) => {
   }
 
   const mailOptions = {
-    from: `"${process.env.FROM_NAME || 'Coin India'}" <${process.env.FROM_EMAIL || 'noreply@coinindia.com'}>`,
+    from: `"${process.env.FROM_NAME || 'Coinomart'}" <${process.env.FROM_EMAIL || 'noreply@coinomart.com'}>`,
     to,
     subject,
     html,

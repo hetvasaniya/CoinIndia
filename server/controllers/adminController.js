@@ -56,6 +56,66 @@ const getDashboardStats = async (req, res) => {
       .limit(6)
       .populate('user', 'name email');
 
+    // Day-to-day order and revenue analytics (Last 7 days)
+    const daysCount = 7;
+    const now = new Date();
+    const startDate = new Date();
+    startDate.setDate(now.getDate() - (daysCount - 1));
+    startDate.setHours(0, 0, 0, 0);
+
+    const dailyAgg = await Order.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: startDate }
+        }
+      },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" }
+          },
+          totalOrders: { $sum: 1 },
+          deliveredOrders: {
+            $sum: { $cond: [{ $eq: ["$status", "delivered"] }, 1, 0] }
+          },
+          revenue: {
+            $sum: {
+              $cond: [
+                { $and: [{ $eq: ["$paymentStatus", "paid"] }, { $ne: ["$status", "cancelled"] }] },
+                "$totalAmount",
+                0
+              ]
+            }
+          }
+        }
+      }
+    ]);
+
+    const dailyMap = {};
+    dailyAgg.forEach(item => {
+      dailyMap[item._id] = item;
+    });
+
+    const dailyAnalytics = [];
+    for (let i = daysCount - 1; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(now.getDate() - i);
+      const key = d.toISOString().split('T')[0];
+      const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+      const dayNum = d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+      
+      const found = dailyMap[key] || { totalOrders: 0, deliveredOrders: 0, revenue: 0 };
+      dailyAnalytics.push({
+        date: key,
+        dayName,
+        label: `${dayName}, ${dayNum}`,
+        shortLabel: dayNum,
+        orders: found.totalOrders || 0,
+        revenue: found.revenue || 0,
+        deliveredOrders: found.deliveredOrders || 0
+      });
+    }
+
     res.json({
       totalCoins,
       totalOrders,
@@ -75,6 +135,7 @@ const getDashboardStats = async (req, res) => {
       lowStock,
       recentCoins,
       recentOrders,
+      dailyAnalytics,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });

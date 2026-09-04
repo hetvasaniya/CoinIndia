@@ -7,8 +7,8 @@ const adminService = {
   createCoin: (data) => api.post('/admin/coins', data, { headers: { 'Content-Type': 'multipart/form-data' } }).then((res) => res.data),
   updateCoin: (id, data) => api.put(`/admin/coins/${id}`, data, { headers: { 'Content-Type': 'multipart/form-data' } }).then((res) => res.data),
   deleteCoin: (id) => api.delete(`/admin/coins/${id}`).then((res) => res.data),
-  updateQuantity: (id, quantity) => api.patch(`/admin/coins/${id}/quantity`, { quantity }).then((res) => res.data),
-  toggleFeatured: (id) => api.patch(`/admin/coins/${id}/featured`).then((res) => res.data),
+  updateQuantity: (id, quantity) => api.put(`/admin/coins/${id}/quantity`, { quantity }).then((res) => res.data),
+  toggleFeatured: (id) => api.put(`/admin/coins/${id}/featured`).then((res) => res.data),
   
   getCategories: () => api.get('/admin/categories').then((res) => res.data),
   createCategory: (data) => api.post('/admin/categories', data).then((res) => res.data),
