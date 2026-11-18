@@ -37,12 +37,20 @@ const PaymentHistory = () => {
 
   if (loading) return <Loader fullScreen />;
 
-  const cardBg = isDark ? 'bg-dark-800 border-dark-700' : 'bg-white border-gray-200';
+  const cardBg = isDark ? 'bg-dark-800 border-dark-600' : 'bg-white border-gray-200';
 
   return (
-    <div className={`min-h-screen py-12 transition-colors ${isDark ? 'bg-dark-900 text-gray-100' : 'bg-[#FAF8F5] text-gray-900'}`}>
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className={`text-3xl font-serif mb-8 ${isDark ? 'text-white' : 'text-gray-900'}`}>Payment History</h1>
+    <div className={`min-h-screen py-6 sm:py-12 transition-colors ${isDark ? 'bg-dark-900 text-gray-100' : 'bg-[#FAF8F5] text-gray-900'}`}>
+      <div className="max-w-5xl mx-auto px-3 sm:px-6 lg:px-8">
+        
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-2">
+          <h1 className={`text-2xl sm:text-3xl font-serif font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Payment History
+          </h1>
+          <p className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+            {payments.length} {payments.length === 1 ? 'transaction' : 'transactions'} recorded
+          </p>
+        </div>
 
         {payments.length === 0 ? (
           <EmptyState 
@@ -51,36 +59,61 @@ const PaymentHistory = () => {
             icon={<FiCreditCard className={`h-12 w-12 ${isDark ? 'text-gray-600' : 'text-gray-300'}`} />}
           />
         ) : (
-          <div className={`border rounded-xl shadow-sm overflow-hidden ${cardBg}`}>
-            <div className="overflow-x-auto">
-              <table className={`min-w-full divide-y ${isDark ? 'divide-dark-700' : 'divide-gray-200'}`}>
-                <thead className={isDark ? 'bg-dark-700/50' : 'bg-gray-50'}>
-                  <tr>
-                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Order #</th>
-                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Date</th>
-                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Method</th>
-                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Amount</th>
-                    <th className={`px-6 py-3 text-right text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Status</th>
-                  </tr>
-                </thead>
-                <tbody className={`divide-y ${isDark ? 'divide-dark-700' : 'divide-gray-200'}`}>
-                  {payments.map((p) => (
-                    <tr key={p.id} className={`transition-colors ${isDark ? 'hover:bg-dark-700/50' : 'hover:bg-gray-50'}`}>
-                      <td className={`px-6 py-4 text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{p.orderNumber}</td>
-                      <td className={`px-6 py-4 text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{new Date(p.date).toLocaleDateString()}</td>
-                      <td className={`px-6 py-4 text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{p.method}</td>
-                      <td className="px-6 py-4 text-sm font-bold text-gold-500">{formatPrice(p.amount)}</td>
-                      <td className="px-6 py-4 text-right text-xs font-semibold">
-                        <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 capitalize">
-                          {p.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <>
+            {/* Mobile Cards View (Visible on <sm) */}
+            <div className="block sm:hidden space-y-3">
+              {payments.map((p) => (
+                <div key={p.id} className={`p-4 rounded-xl border shadow-xs ${cardBg}`}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-bold text-gold-500">Order #{p.orderNumber}</span>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                      {p.status}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-baseline mb-2">
+                    <span className="text-xs text-gray-500">{new Date(p.date).toLocaleDateString()}</span>
+                    <span className="text-sm font-bold text-gold-400">{formatPrice(p.amount)}</span>
+                  </div>
+                  <div className="text-[11px] text-gray-400 flex items-center justify-between border-t pt-2 border-gray-500/10">
+                    <span>Payment Gateway:</span>
+                    <span className="font-medium text-gray-300">{p.method}</span>
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
+
+            {/* Desktop / Tablet Table View (Visible on sm+) */}
+            <div className={`hidden sm:block border rounded-2xl shadow-xs overflow-hidden ${cardBg}`}>
+              <div className="overflow-x-auto touch-scroll">
+                <table className={`min-w-full divide-y ${isDark ? 'divide-dark-700' : 'divide-gray-200'}`}>
+                  <thead className={isDark ? 'bg-dark-750' : 'bg-gray-50'}>
+                    <tr>
+                      <th className={`px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Order #</th>
+                      <th className={`px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Date</th>
+                      <th className={`px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Gateway Method</th>
+                      <th className={`px-5 py-3 text-left text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Amount Paid</th>
+                      <th className={`px-5 py-3 text-right text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className={`divide-y ${isDark ? 'divide-dark-700' : 'divide-gray-200'}`}>
+                    {payments.map((p) => (
+                      <tr key={p.id} className={`transition-colors ${isDark ? 'hover:bg-dark-700/50' : 'hover:bg-gray-50'}`}>
+                        <td className={`px-5 py-3.5 text-sm font-semibold font-mono ${isDark ? 'text-white' : 'text-gray-900'}`}>{p.orderNumber}</td>
+                        <td className={`px-5 py-3.5 text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{new Date(p.date).toLocaleDateString()}</td>
+                        <td className={`px-5 py-3.5 text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{p.method}</td>
+                        <td className="px-5 py-3.5 text-sm font-bold text-gold-500">{formatPrice(p.amount)}</td>
+                        <td className="px-5 py-3.5 text-right text-xs font-semibold">
+                          <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 capitalize font-medium">
+                            {p.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </>
         )}
       </div>
     </div>

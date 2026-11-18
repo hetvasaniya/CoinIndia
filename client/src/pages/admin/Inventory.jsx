@@ -68,13 +68,13 @@ const Inventory = () => {
 
   return (
     <div>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-        <h1 className={`text-2xl font-serif ${isDark ? 'text-white' : 'text-gray-900'}`}>Inventory Management</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6">
+        <h1 className={`text-xl sm:text-2xl font-serif ${isDark ? 'text-white' : 'text-gray-900'}`}>Inventory Management</h1>
         <div className="w-full sm:w-72">
           <input
             type="text"
             placeholder="Search by artifact name or SKU..."
-            className={`w-full px-3 py-2 border rounded-lg text-sm transition-all focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500 ${
+            className={`w-full px-3 py-2 border rounded-lg text-xs sm:text-sm transition-all focus:outline-none focus:ring-1 focus:ring-gold-500 focus:border-gold-500 ${
               isDark ? 'bg-dark-700 border-dark-600 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
             }`}
             value={search}
@@ -83,8 +83,69 @@ const Inventory = () => {
         </div>
       </div>
       
-      <div className={`border rounded-xl shadow-sm overflow-hidden ${cardBg}`}>
-        <div className="overflow-x-auto">
+      {/* Mobile Inventory Cards (< md) */}
+      <div className="block md:hidden space-y-3 mb-6">
+        {filteredInventory.length === 0 ? (
+          <div className={`p-6 text-center rounded-xl border ${cardBg}`}>
+            <p className="text-xs text-gray-500">No matching inventory items found.</p>
+          </div>
+        ) : (
+          filteredInventory.map((item) => (
+            <div key={item._id} className={`p-4 border rounded-xl shadow-sm ${cardBg} space-y-3`}>
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <h3 className={`text-sm font-semibold truncate ${isDark ? 'text-white' : 'text-gray-900'}`}>{item.name}</h3>
+                  <p className="text-xs text-gray-500 mt-0.5">{item.sku || 'No SKU'}</p>
+                </div>
+                <span className="text-sm font-bold text-gold-500 flex-shrink-0">
+                  {formatPrice(item.price || item.sellingPrice)}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-dark-700">
+                <div>
+                  {item.quantity > 5 ? (
+                    <span className="px-2 py-0.5 inline-flex text-[10px] font-semibold rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">In Stock ({item.quantity})</span>
+                  ) : item.quantity > 0 ? (
+                    <span className="px-2 py-0.5 inline-flex text-[10px] font-semibold rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/20">Low Stock ({item.quantity})</span>
+                  ) : (
+                    <span className="px-2 py-0.5 inline-flex text-[10px] font-semibold rounded-full bg-red-500/10 text-red-500 border border-red-500/20">Out of Stock (0)</span>
+                  )}
+                </div>
+
+                <div className="flex items-center">
+                  <input 
+                    type="number" 
+                    min="0"
+                    placeholder="Qty"
+                    className={`w-16 px-2 py-1 text-xs border rounded-l-lg focus:outline-none focus:ring-1 focus:ring-gold-500 ${
+                      isDark ? 'bg-dark-700 border-dark-600 text-white' : 'bg-white border-gray-300 text-gray-900'
+                    }`}
+                    value={editQty[item._id] !== undefined ? editQty[item._id] : item.quantity}
+                    onChange={(e) => handleQtyChange(item._id, e.target.value)}
+                  />
+                  <button 
+                    onClick={() => updateQuantity(item._id)}
+                    disabled={updatingId === item._id || editQty[item._id] === undefined || editQty[item._id] == item.quantity}
+                    className="bg-gold-500 text-white px-2.5 py-1 text-xs border border-gold-500 rounded-r-lg disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gold-600 transition-colors flex items-center justify-center min-w-[32px]"
+                    title="Save quantity"
+                  >
+                    {updatingId === item._id ? (
+                      <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    ) : (
+                      <FiCheck className="w-3.5 h-3.5" />
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table (>= md) */}
+      <div className={`hidden md:block border rounded-xl shadow-sm overflow-hidden ${cardBg}`}>
+        <div className="overflow-x-auto touch-scroll">
           <table className={`min-w-full divide-y ${isDark ? 'divide-dark-700' : 'divide-gray-200'}`}>
             <thead className={isDark ? 'bg-dark-700/50' : 'bg-gray-50'}>
               <tr>

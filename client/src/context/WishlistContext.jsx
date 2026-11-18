@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState, useEffect, useContext, useCallback } from 'react';
 import wishlistService from '../services/wishlistService';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
@@ -12,47 +12,71 @@ export const WishlistProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (user) {
-      fetchWishlist();
-    } else {
-      setWishlistItems([]);
-    }
-  }, [user]);
-
-  const fetchWishlist = async () => {
+  const fetchWishlist = useCallback(async (isInitial = false) => {
     try {
-      setLoading(true);
+      if (isInitial) setLoading(true);
       const data = await wishlistService.getWishlist();
       setWishlistItems(data.coins || data.items || []);
     } catch (error) {
       console.error('Failed to fetch wishlist', error);
       setWishlistItems([]);
     } finally {
-      setLoading(false);
+      if (isInitial) setLoading(false);
     }
-  };
+  }, []);
 
-  const toggleWishlist = async (coinId) => {
+  useEffect(() => {
+    if (user) {
+      fetchWishlist(true);
+    } else {
+      setWishlistItems([]);
+    }
+  }, [user, fetchWishlist]);
+
+  const isInWishlist = useCallback(
+    (coinId) => {
+      if (!coinId) return false;
+      return wishlistItems.some((item) => {
+        const id = item?._id || item?.coin?._id || item;
+        return id?.toString() === coinId?.toString();
+      });
+    },
+    [wishlistItems]
+  );
+
+  const toggleWishlist = async (coinId, coinData = null) => {
     if (!user) {
       toast.error('Please login to manage wishlist');
       return;
     }
-    try {
-      await wishlistService.toggleWishlist(coinId);
-      fetchWishlist();
-      toast.success('Wishlist updated');
-    } catch (error) {
-      toast.error('Failed to update wishlist');
-    }
-  };
 
-  const isInWishlist = (coinId) => {
-    if (!coinId) return false;
-    return wishlistItems.some((item) => {
-      const id = item?._id || item?.coin?._id || item;
-      return id?.toString() === coinId?.toString();
-    });
+    const previousItems = wishlistItems;
+    const exists = isInWishlist(coinId);
+
+    // Optimistic toggle
+    if (exists) {
+      setWishlistItems((prev) =>
+        prev.filter((item) => {
+          const id = item?._id || item?.coin?._id || item;
+          return id?.toString() !== coinId?.toString();
+        })
+      );
+    } else {
+      const newItem = coinData || { _id: coinId };
+      setWishlistItems((prev) => [newItem, ...prev]);
+    }
+
+    try {
+      const data = await wishlistService.toggleWishlist(coinId);
+      if (data?.coins || data?.items) {
+        setWishlistItems(data.coins || data.items);
+      }
+      toast.success(exists ? 'Removed from wishlist' : 'Saved to wishlist');
+    } catch (error) {
+      // Rollback on error
+      setWishlistItems(previousItems);
+      toast.error(error.response?.data?.message || 'Failed to update wishlist');
+    }
   };
 
   const value = {

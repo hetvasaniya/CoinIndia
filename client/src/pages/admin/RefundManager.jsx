@@ -43,8 +43,8 @@ const RefundManager = () => {
     fetchRefundsAndStats();
   }, [statusFilter, methodFilter]);
 
-  const fetchRefundsAndStats = async () => {
-    setLoading(true);
+  const fetchRefundsAndStats = async (isInitial = true) => {
+    if (isInitial) setLoading(true);
     try {
       const [refundsData, statsData] = await Promise.all([
         adminService.getRefunds({
@@ -62,7 +62,16 @@ const RefundManager = () => {
     } catch (error) {
       toast.error('Failed to load refund records');
     } finally {
-      setLoading(false);
+      if (isInitial) setLoading(false);
+    }
+  };
+
+  const refreshStatsSilent = async () => {
+    try {
+      const statsData = await adminService.getRefundStats();
+      if (statsData) setStats(statsData);
+    } catch (err) {
+      // ignore
     }
   };
 
@@ -101,10 +110,15 @@ const RefundManager = () => {
     setSubmitting(true);
     try {
       const res = await adminService.processRefund(selectedOrder._id, refundForm);
+      const updatedOrder = res.order || res;
       toast.success(`Refund status updated to ${refundForm.refundStatus.toUpperCase()}`);
       setConfirmOpen(false);
       setModalOpen(false);
-      fetchRefundsAndStats();
+      setOrders((prev) => prev.map((o) => (o._id === selectedOrder._id ? { ...o, ...updatedOrder } : o)));
+      if (selectedOrder) {
+        setSelectedOrder((prev) => ({ ...prev, ...updatedOrder }));
+      }
+      refreshStatsSilent();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to process refund');
     } finally {
@@ -214,12 +228,12 @@ const RefundManager = () => {
       )}
 
       {/* Filter Tabs & Search Bar */}
-      <div className={`p-4 border rounded-xl shadow-sm space-y-4 ${cardBg}`}>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className={`p-3.5 sm:p-4 border rounded-xl shadow-sm space-y-3 sm:space-y-4 ${cardBg}`}>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
           {/* Status filter tabs */}
           <div className="flex flex-wrap gap-1.5">
             {[
-              { key: 'all', label: 'All Refund Statuses' },
+              { key: 'all', label: 'All' },
               { key: 'pending', label: 'Pending' },
               { key: 'processing', label: 'Processing' },
               { key: 'refunded', label: 'Completed (Refunded)' },
@@ -228,7 +242,7 @@ const RefundManager = () => {
               <button
                 key={tab.key}
                 onClick={() => setStatusFilter(tab.key)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium transition-all ${
                   statusFilter === tab.key
                     ? 'bg-gold-500 text-dark-900 font-bold shadow-sm'
                     : isDark ? 'bg-dark-700 text-gray-300 hover:bg-dark-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -240,7 +254,7 @@ const RefundManager = () => {
           </div>
 
           {/* Search, Payment Method, & Sort controls */}
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full md:w-auto">
             <div className="relative w-full sm:w-56">
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
@@ -257,7 +271,7 @@ const RefundManager = () => {
             <select
               value={methodFilter}
               onChange={(e) => setMethodFilter(e.target.value)}
-              className={`px-2.5 py-1.5 border rounded-lg text-xs focus:ring-1 focus:ring-gold-500 ${
+              className={`w-full sm:w-auto px-2.5 py-1.5 border rounded-lg text-xs focus:ring-1 focus:ring-gold-500 ${
                 isDark ? 'bg-dark-700 border-dark-600 text-white' : 'bg-white border-gray-300 text-gray-900'
               }`}
             >
@@ -271,7 +285,7 @@ const RefundManager = () => {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className={`px-2.5 py-1.5 border rounded-lg text-xs focus:ring-1 focus:ring-gold-500 ${
+              className={`w-full sm:w-auto px-2.5 py-1.5 border rounded-lg text-xs focus:ring-1 focus:ring-gold-500 ${
                 isDark ? 'bg-dark-700 border-dark-600 text-white' : 'bg-white border-gray-300 text-gray-900'
               }`}
             >
@@ -286,7 +300,7 @@ const RefundManager = () => {
 
       {/* Refunds Table */}
       <div className={`border rounded-xl shadow-sm overflow-hidden ${cardBg}`}>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto touch-scroll">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className={tableHeaderBg}>
               <tr>
@@ -392,17 +406,17 @@ const RefundManager = () => {
       {/* REFUND PROCESS & DETAIL MODAL */}
       {/* ========================================================================= */}
       {modalOpen && selectedOrder && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className={`rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto border ${
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-xs flex items-center justify-center p-2.5 sm:p-4">
+          <div className={`rounded-xl shadow-2xl max-w-3xl w-full max-h-[92vh] overflow-y-auto touch-scroll border ${
             isDark ? 'bg-dark-800 border-dark-700 text-white' : 'bg-white border-gray-200 text-gray-900'
           }`}>
             {/* Modal Header */}
-            <div className={`sticky top-0 border-b px-6 py-4 flex items-center justify-between z-10 ${
+            <div className={`sticky top-0 border-b px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between z-10 ${
               isDark ? 'bg-dark-900 border-dark-700' : 'bg-[#FAFAF7] border-gray-200'
             }`}>
               <div>
-                <div className="flex items-center gap-3">
-                  <h2 className="text-xl font-serif font-bold">
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                  <h2 className="text-lg sm:text-xl font-serif font-bold">
                     Refund for Order {selectedOrder.orderNumber || `#${selectedOrder._id.slice(-8).toUpperCase()}`}
                   </h2>
                   <span className={`px-2.5 py-0.5 text-xs font-bold rounded-full uppercase ${getRefundStatusColor(refundForm.refundStatus)}`}>
@@ -421,7 +435,7 @@ const RefundManager = () => {
               </button>
             </div>
 
-            <form onSubmit={handleFormSubmit} className="p-6 space-y-6">
+            <form onSubmit={handleFormSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               {/* Order Summary & Products Preview */}
               <div className={`p-4 rounded-xl border text-xs space-y-3 ${
                 isDark ? 'bg-dark-900/60 border-dark-700' : 'bg-gray-50 border-gray-200'
@@ -569,11 +583,11 @@ const RefundManager = () => {
                 </div>
               </div>
 
-              <div className="pt-4 border-t flex items-center justify-end gap-3">
+              <div className="pt-4 border-t flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 sm:gap-3">
                 <button
                   type="button"
                   onClick={() => setModalOpen(false)}
-                  className={`px-4 py-2 border rounded-lg text-xs font-medium ${
+                  className={`w-full sm:w-auto px-4 py-2 border rounded-lg text-xs font-medium ${
                     isDark ? 'border-dark-700 hover:bg-dark-700' : 'border-gray-300 hover:bg-gray-50'
                   }`}
                 >
@@ -581,7 +595,7 @@ const RefundManager = () => {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-gradient-to-r from-gold-600 to-gold-400 text-dark-900 rounded-lg text-xs font-bold hover:from-gold-500 hover:to-gold-300 shadow-md"
+                  className="w-full sm:w-auto px-5 py-2 bg-gradient-to-r from-gold-600 to-gold-400 text-dark-900 rounded-lg text-xs font-bold hover:from-gold-500 hover:to-gold-300 shadow-md"
                 >
                   Save & Update Refund
                 </button>

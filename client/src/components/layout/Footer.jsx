@@ -47,19 +47,19 @@ const Footer = () => {
           </div>
         </div>
         
-        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center">
+        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-center md:text-left">
           <p className="text-gray-500 text-sm">
             &copy; {new Date().getFullYear()} Coinomart. All rights reserved.
           </p>
-          <div className="mt-4 md:mt-0 flex space-x-6 items-center">
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
             <span className="text-gray-500 text-sm">Newsletter</span>
-            <div className="flex">
+            <div className="flex w-full sm:w-auto max-w-sm">
               <input 
                 type="email" 
                 placeholder="Email Address" 
-                className="bg-white/10 text-white px-4 py-1.5 text-sm outline-none border border-white/20 focus:border-gold-500 rounded-l-lg placeholder-gray-500 transition-colors" 
+                className="w-full sm:w-48 bg-white/10 text-white px-3.5 py-2 text-sm outline-none border border-white/20 focus:border-gold-500 rounded-l-lg placeholder-gray-500 transition-colors min-w-0" 
               />
-              <button className="bg-gradient-to-r from-gold-600 to-gold-400 text-dark-900 px-4 py-1.5 text-sm font-medium hover:from-gold-500 hover:to-gold-300 transition-all rounded-r-lg">
+              <button className="bg-gradient-to-r from-gold-600 to-gold-400 text-dark-900 px-4 py-2 text-sm font-semibold hover:from-gold-500 hover:to-gold-300 transition-all rounded-r-lg whitespace-nowrap">
                 Subscribe
               </button>
             </div>

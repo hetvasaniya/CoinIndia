@@ -4,6 +4,7 @@ import Button from '../../components/common/Button';
 import { STATIC_IMAGES } from '../../data/staticImages';
 import { useTheme } from '../../context/ThemeContext';
 import MarqueeSlidersSection from '../../components/home/MarqueeSlidersSection';
+import HeroVerticalCardSlider from '../../components/home/HeroVerticalCardSlider';
 
 const Home = () => {
   const { isDark } = useTheme();
@@ -11,7 +12,7 @@ const Home = () => {
   return (
     <div className={`transition-colors duration-300 ${isDark ? 'bg-dark-900 text-gray-100' : 'bg-[#FAF8F5] text-gray-900'}`}>
       {/* Hero Section */}
-      <section className={`relative py-24 overflow-hidden ${
+      <section className={`relative py-12 sm:py-20 md:py-28 overflow-hidden ${
         isDark 
           ? 'bg-gradient-to-b from-dark-950 via-dark-900 to-dark-900' 
           : 'bg-gradient-to-b from-gold-50/50 via-[#FAF8F5] to-[#FAF8F5]'
@@ -19,39 +20,35 @@ const Home = () => {
         {/* Decorative Animated Glows */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gold-500/10 rounded-full blur-[120px] pointer-events-none animate-pulse"></div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center relative z-10">
-          <div className="md:w-1/2 text-center md:text-left mb-12 md:mb-0">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest bg-gold-500/10 text-gold-500 border border-gold-500/20 mb-6">
-              <FiAward className="w-3.5 h-3.5" /> India's Premier Numismatic Marketplace
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center relative z-10 gap-8 md:gap-4">
+          <div className="md:w-1/2 text-center md:text-left mb-6 md:mb-0">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-widest bg-gold-500/10 text-gold-500 border border-gold-500/20 mb-4 sm:mb-6">
+              <FiAward className="w-3.5 h-3.5 flex-shrink-0" /> India's Premier Numismatic Marketplace
             </div>
-            <h1 className={`text-4xl md:text-6xl font-serif leading-tight mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            <h1 className={`text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif leading-tight mb-4 sm:mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>
               Discover India's History, <br/>
               <span className="italic gradient-text-gold">One Coin at a Time.</span>
             </h1>
-            <p className={`text-lg mb-8 max-w-lg mx-auto md:mx-0 font-sans leading-relaxed ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+            <p className={`text-sm sm:text-base md:text-lg mb-6 sm:mb-8 max-w-lg mx-auto md:mx-0 font-sans leading-relaxed ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
               Explore our curated collection of rare and authentic numismatic artifacts spanning millennia of Indian civilization.
             </p>
-            <div className="flex flex-col sm:flex-row justify-center md:justify-start space-y-4 sm:space-y-0 sm:space-x-4">
-              <Link to="/explore">
+            <div className="flex flex-col sm:flex-row justify-center md:justify-start gap-3 sm:gap-4">
+              <Link to="/explore" className="w-full sm:w-auto">
                 <Button size="lg" className="w-full sm:w-auto uppercase tracking-wider text-sm shadow-gold">
                   Explore Catalog
                 </Button>
               </Link>
-              <Link to="/about">
+              <Link to="/about" className="w-full sm:w-auto">
                 <Button variant="outline" size="lg" className="w-full sm:w-auto uppercase tracking-wider text-sm">
                   Our Story
                 </Button>
               </Link>
             </div>
           </div>
-          <div className="md:w-1/2 relative h-[400px] md:h-[500px] flex items-center justify-center">
-            {/* Ambient Backlight */}
-            <div className="absolute inset-0 bg-gold-500/20 rounded-full blur-3xl transform translate-x-10 scale-90"></div>
-            <img 
-              src={STATIC_IMAGES.hero.featuredArtefact} 
-              alt="Rare historic coin" 
-              className="w-3/4 max-w-md object-contain z-10 drop-shadow-[0_20px_50px_rgba(184,134,11,0.3)] transition-transform duration-700 hover:scale-105"
-            />
+
+          {/* Right Side 3D Vertical Slider */}
+          <div className="md:w-1/2 relative w-full flex items-center justify-center">
+            <HeroVerticalCardSlider />
           </div>
         </div>
       </section>
@@ -60,20 +57,20 @@ const Home = () => {
       <MarqueeSlidersSection />
 
       {/* Curated Periods */}
-      <section className={`py-20 border-t ${isDark ? 'border-dark-800 bg-dark-900' : 'border-gray-200 bg-white'}`}>
+      <section className={`py-12 sm:py-20 border-t ${isDark ? 'border-dark-800 bg-dark-900' : 'border-gray-200 bg-white'}`}>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className={`flex justify-between items-end mb-10 border-b pb-4 ${isDark ? 'border-dark-700' : 'border-gray-200'}`}>
+          <div className={`flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 mb-8 sm:mb-10 border-b pb-4 ${isDark ? 'border-dark-700' : 'border-gray-200'}`}>
             <div>
               <span className="text-xs uppercase tracking-widest text-gold-500 font-semibold">Chronological Collections</span>
-              <h2 className={`text-3xl font-serif mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>Curated Periods</h2>
+              <h2 className={`text-2xl sm:text-3xl font-serif mt-1 ${isDark ? 'text-white' : 'text-gray-900'}`}>Curated Periods</h2>
             </div>
-            <Link to="/explore" className="text-gold-500 hover:text-gold-400 text-sm uppercase tracking-wider flex items-center group font-medium">
+            <Link to="/explore" className="text-gold-500 hover:text-gold-400 text-xs sm:text-sm uppercase tracking-wider flex items-center group font-medium">
               View All <FiArrowRight className="ml-2 transform group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
             {STATIC_IMAGES.periods.map((period, i) => (
               <div key={period.id || i} className={`relative h-72 rounded-xl overflow-hidden group cursor-pointer border transition-all duration-500 card-hover ${
                 isDark ? 'border-dark-700 bg-dark-800' : 'border-gray-200 bg-gray-900'

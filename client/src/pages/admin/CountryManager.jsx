@@ -136,25 +136,25 @@ const CountryManager = () => {
 
   return (
     <div className="space-y-6">
-      <div className={`flex justify-between items-center border-b pb-4 ${isDark ? 'border-dark-700' : 'border-gray-200'}`}>
+      <div className={`flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b pb-4 ${isDark ? 'border-dark-700' : 'border-gray-200'}`}>
         <div>
-          <h1 className={`text-2xl font-serif ${isDark ? 'text-white' : 'text-gray-900'}`}>Country Catalog</h1>
-          <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Manage countries for coin minting and origins</p>
+          <h1 className={`text-xl sm:text-2xl font-serif ${isDark ? 'text-white' : 'text-gray-900'}`}>Country Catalog</h1>
+          <p className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Manage countries for coin minting and origins</p>
         </div>
-        <div className="text-xs bg-gold-500/10 border border-gold-500/20 px-3 py-1.5 rounded-full font-medium text-gold-500">
+        <div className="self-start sm:self-auto text-xs bg-gold-500/10 border border-gold-500/20 px-3 py-1.5 rounded-full font-medium text-gold-500">
           Total Recorded: {countries.length}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         {/* LEFT SIDE */}
         <div className="lg:col-span-2 space-y-4">
-          <h2 className={`text-lg font-serif flex items-center gap-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
+          <h2 className={`text-base sm:text-lg font-serif flex items-center gap-2 ${isDark ? 'text-white' : 'text-gray-900'}`}>
             <FiGlobe className="text-gold-500" /> Added Countries Catalog
           </h2>
 
           <div className={`border rounded-xl shadow-sm overflow-hidden ${cardBg}`}>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto touch-scroll">
               <table className={`min-w-full divide-y ${isDark ? 'divide-dark-700' : 'divide-gray-200'}`}>
                 <thead className={isDark ? 'bg-dark-700/50' : 'bg-gray-50'}>
                   <tr>

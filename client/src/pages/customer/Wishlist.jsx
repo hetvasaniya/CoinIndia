@@ -11,12 +11,24 @@ const Wishlist = () => {
   const { isDark } = useTheme();
   const coins = Array.isArray(wishlist) ? wishlist : [];
 
-  if (loading) return <div className={`text-center py-20 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Loading wishlist...</div>;
+  if (loading) return (
+    <div className={`min-h-[50vh] flex items-center justify-center text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+      Loading saved artifacts...
+    </div>
+  );
 
   return (
-    <div className={`min-h-screen py-12 transition-colors ${isDark ? 'bg-dark-900 text-gray-100' : 'bg-[#FAF8F5] text-gray-900'}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 className={`text-3xl font-serif mb-8 ${isDark ? 'text-white' : 'text-gray-900'}`}>Saved Artifacts</h1>
+    <div className={`min-h-screen py-6 sm:py-12 transition-colors ${isDark ? 'bg-dark-900 text-gray-100' : 'bg-[#FAF8F5] text-gray-900'}`}>
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 sm:mb-8 gap-2">
+          <h1 className={`text-2xl sm:text-3xl font-serif font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            Saved Artifacts ({coins.length})
+          </h1>
+          <p className={`text-xs sm:text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+            Personal numismatic bookmarks and wishlist
+          </p>
+        </div>
         
         {coins.length === 0 ? (
           <EmptyState 
@@ -25,12 +37,14 @@ const Wishlist = () => {
             icon={<FiHeart className={`h-12 w-12 ${isDark ? 'text-gray-600' : 'text-gray-300'}`} />}
             action={
               <Link to="/explore">
-                <Button>Explore Catalog</Button>
+                <Button className="shadow-gold uppercase tracking-wider text-xs sm:text-sm">
+                  Explore Catalog
+                </Button>
               </Link>
             }
           />
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-2.5 sm:gap-4">
             {coins.map(coin => (
               <CoinCard key={coin._id} coin={coin} />
             ))}

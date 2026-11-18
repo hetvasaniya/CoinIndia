@@ -162,11 +162,11 @@ const MarqueeSlidersSection = () => {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <span className={`text-xs font-medium px-3 py-1.5 rounded-full border flex items-center gap-1.5 ${
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
+            <span className={`text-[11px] sm:text-xs font-medium px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full border flex items-center gap-1.5 ${
               isDark ? 'bg-dark-800 border-dark-700 text-gray-300' : 'bg-white border-gray-200 text-gray-700'
             }`}>
-              <FiInfo className="w-3.5 h-3.5 text-gold-500" /> Hover to Pause &bull; Click for Details
+              <FiInfo className="w-3.5 h-3.5 text-gold-500 flex-shrink-0" /> Hover to Pause &bull; Click for Details
             </span>
             <Link 
               to="/explore" 

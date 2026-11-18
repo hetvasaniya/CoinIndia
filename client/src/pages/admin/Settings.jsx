@@ -195,10 +195,10 @@ const Settings = () => {
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-12">
       {/* Top Header & Global Theme Switcher */}
-      <div className={`p-6 border rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${cardBg}`}>
+      <div className={`p-4 sm:p-6 border rounded-xl shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${cardBg}`}>
         <div>
-          <h1 className={`text-2xl font-serif font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Admin Settings</h1>
-          <p className={`text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+          <h1 className={`text-xl sm:text-2xl font-serif font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Admin Settings</h1>
+          <p className={`text-xs sm:text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
             Manage global support settings, contact form, shipping rules, policies, and customer help requests.
           </p>
         </div>
@@ -207,23 +207,23 @@ const Settings = () => {
         <button
           onClick={toggleTheme}
           type="button"
-          className={`flex items-center gap-3 px-4 py-2.5 rounded-xl border text-sm font-medium transition-all shadow-sm ${
+          className={`self-start sm:self-auto flex items-center gap-3 px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl border text-xs sm:text-sm font-medium transition-all shadow-sm ${
             isDark 
               ? 'bg-dark-700 hover:bg-dark-600 text-amber-400 border-gold-500/30' 
               : 'bg-gray-100 hover:bg-gray-200 text-gray-800 border-gray-300'
           }`}
           title={`Switch to ${isDark ? 'Light' : 'Dark'} Mode`}
         >
-          {isDark ? <FiSun className="text-lg text-amber-400" /> : <FiMoon className="text-lg text-indigo-600" />}
+          {isDark ? <FiSun className="text-base sm:text-lg text-amber-400" /> : <FiMoon className="text-base sm:text-lg text-indigo-600" />}
           <span>Theme: <strong className="uppercase text-gold-500">{isDark ? 'Dark' : 'Light'}</strong></span>
         </button>
       </div>
 
       {/* Tabs Navigation */}
-      <div className="flex flex-wrap gap-2 border-b border-dark-700/50 pb-2">
+      <div className="flex overflow-x-auto touch-scroll no-scrollbar gap-2 border-b border-dark-700/50 pb-2">
         <button
           onClick={() => setActiveTab('support')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0 transition-colors ${
             activeTab === 'support'
               ? 'bg-gold-500 text-dark-900 font-bold shadow-md'
               : isDark ? 'text-gray-400 hover:bg-dark-800' : 'text-gray-600 hover:bg-gray-100'
@@ -233,7 +233,7 @@ const Settings = () => {
         </button>
         <button
           onClick={() => setActiveTab('shipping')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0 transition-colors ${
             activeTab === 'shipping'
               ? 'bg-gold-500 text-dark-900 font-bold shadow-md'
               : isDark ? 'text-gray-400 hover:bg-dark-800' : 'text-gray-600 hover:bg-gray-100'
@@ -243,7 +243,7 @@ const Settings = () => {
         </button>
         <button
           onClick={() => setActiveTab('privacy')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0 transition-colors ${
             activeTab === 'privacy'
               ? 'bg-gold-500 text-dark-900 font-bold shadow-md'
               : isDark ? 'text-gray-400 hover:bg-dark-800' : 'text-gray-600 hover:bg-gray-100'
@@ -253,7 +253,7 @@ const Settings = () => {
         </button>
         <button
           onClick={() => { setActiveTab('inquiries'); fetchInquiries(); }}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+          className={`flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0 transition-colors ${
             activeTab === 'inquiries'
               ? 'bg-gold-500 text-dark-900 font-bold shadow-md'
               : isDark ? 'text-gray-400 hover:bg-dark-800' : 'text-gray-600 hover:bg-gray-100'
@@ -569,7 +569,7 @@ const Settings = () => {
               No customer support inquiries found.
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto touch-scroll">
               <table className={`min-w-full divide-y ${isDark ? 'divide-dark-700' : 'divide-gray-200'}`}>
                 <thead className={isDark ? 'bg-dark-700/50' : 'bg-gray-50'}>
                   <tr>
@@ -631,8 +631,8 @@ const Settings = () => {
 
           {/* Modal for View / Reply */}
           {selectedInquiry && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-              <div className={`w-full max-w-2xl p-6 rounded-2xl border shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto ${cardBg}`}>
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/70 backdrop-blur-sm">
+              <div className={`w-full max-w-2xl p-4 sm:p-6 rounded-2xl border shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto touch-scroll ${cardBg}`}>
                 <div className="flex justify-between items-start border-b pb-3 border-dark-700/60">
                   <div>
                     <h3 className={`text-xl font-serif ${isDark ? 'text-white' : 'text-gray-900'}`}>Support Inquiry Details</h3>

@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Coin = require('../models/Coin');
 
 const getCoins = async (req, res) => {
@@ -112,6 +113,145 @@ const getCoinBySlug = async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ message: error.message });
+  }
+};
+
+const getRelatedCoins = async (req, res) => {
+  try {
+    const { identifier } = req.params;
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 8, 1), 16);
+
+    // Find the reference coin either by slug or by ObjectId
+    let currentCoin = null;
+    if (mongoose.Types.ObjectId.isValid(identifier)) {
+      currentCoin = await Coin.findById(identifier);
+    }
+    if (!currentCoin) {
+      currentCoin = await Coin.findOne({ slug: identifier });
+    }
+
+    if (!currentCoin) {
+      return res.status(404).json({ message: 'Coin not found' });
+    }
+
+    // Availability filter: must be active/approved (if status exists), available, quantity > 0, and not the current coin
+    const baseMatch = {
+      _id: { $ne: currentCoin._id },
+      isAvailable: true,
+      quantity: { $gt: 0 },
+      $or: [
+        { status: { $in: ['approved', 'active'] } },
+        { status: { $exists: false } }
+      ]
+    };
+
+    const targetCategoryId = currentCoin.category ? (currentCoin.category._id || currentCoin.category) : null;
+    const targetCountryId = currentCoin.country ? (currentCoin.country._id || currentCoin.country) : null;
+    const targetMintId = currentCoin.mint ? (currentCoin.mint._id || currentCoin.mint) : null;
+    const targetDenomination = currentCoin.denomination ? currentCoin.denomination.trim() : null;
+    const targetEra = currentCoin.era ? currentCoin.era.trim() : null;
+
+    const scoreExpressions = [];
+
+    if (targetCategoryId && mongoose.Types.ObjectId.isValid(targetCategoryId)) {
+      scoreExpressions.push({
+        $cond: [{ $eq: ['$category', new mongoose.Types.ObjectId(targetCategoryId.toString())] }, 4, 0]
+      });
+    }
+
+    if (targetCountryId && mongoose.Types.ObjectId.isValid(targetCountryId)) {
+      scoreExpressions.push({
+        $cond: [{ $eq: ['$country', new mongoose.Types.ObjectId(targetCountryId.toString())] }, 3, 0]
+      });
+    }
+
+    if (targetDenomination) {
+      scoreExpressions.push({
+        $cond: [{ $eq: ['$denomination', targetDenomination] }, 3, 0]
+      });
+    }
+
+    if (targetMintId && mongoose.Types.ObjectId.isValid(targetMintId)) {
+      scoreExpressions.push({
+        $cond: [{ $eq: ['$mint', new mongoose.Types.ObjectId(targetMintId.toString())] }, 2, 0]
+      });
+    }
+
+    if (targetEra) {
+      scoreExpressions.push({
+        $cond: [{ $eq: ['$era', targetEra] }, 1, 0]
+      });
+    }
+
+    let pipeline = [{ $match: baseMatch }];
+
+    if (scoreExpressions.length > 0) {
+      pipeline.push({
+        $addFields: {
+          similarityScore: { $add: scoreExpressions }
+        }
+      });
+      pipeline.push({
+        $sort: {
+          similarityScore: -1,
+          isFeatured: -1,
+          createdAt: -1
+        }
+      });
+    } else {
+      pipeline.push({
+        $sort: {
+          isFeatured: -1,
+          createdAt: -1
+        }
+      });
+    }
+
+    pipeline.push({ $limit: limit });
+
+    let coins = await Coin.aggregate(pipeline);
+
+    // Populate references
+    coins = await Coin.populate(coins, [
+      { path: 'category', select: 'name slug description' },
+      { path: 'country', select: 'name flag code' },
+      { path: 'mint', select: 'name mintMark location' }
+    ]);
+
+    res.json(coins);
+  } catch (error) {
+    console.error('Error fetching related coins:', error);
+    // Graceful fallback to simple find query if aggregation fails
+    try {
+      const { identifier } = req.params;
+      const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 8, 1), 16);
+      let fallbackCurrent = null;
+      if (mongoose.Types.ObjectId.isValid(identifier)) {
+        fallbackCurrent = await Coin.findById(identifier);
+      }
+      if (!fallbackCurrent) {
+        fallbackCurrent = await Coin.findOne({ slug: identifier });
+      }
+
+      const fallbackQuery = {
+        isAvailable: true,
+        quantity: { $gt: 0 }
+      };
+      if (fallbackCurrent) {
+        fallbackQuery._id = { $ne: fallbackCurrent._id };
+      }
+
+      const fallbackCoins = await Coin.find(fallbackQuery)
+        .populate('category', 'name slug description')
+        .populate('country', 'name flag code')
+        .populate('mint', 'name mintMark location')
+        .sort({ isFeatured: -1, createdAt: -1 })
+        .limit(limit);
+
+      return res.json(fallbackCoins);
+    } catch (fallbackError) {
+      res.status(500).json({ message: error.message });
+    }
   }
 };
 
@@ -231,6 +371,7 @@ module.exports = {
   getCoins,
   getFeaturedCoins,
   getCoinBySlug,
+  getRelatedCoins,
   getCoinById,
   createCoin,
   updateCoin,

@@ -62,15 +62,22 @@ const GenericManager = ({
     e.preventDefault();
     try {
       if (editId) {
-        await updateFn(editId, formData);
+        const res = await updateFn(editId, formData);
+        const updatedItem = res?.data || res || { ...formData, _id: editId };
+        setItems((prev) => prev.map((i) => (i._id === editId ? { ...i, ...updatedItem } : i)));
         toast.success(`${title} updated successfully`);
       } else {
-        await createFn(formData);
+        const res = await createFn(formData);
+        const newItem = res?.data || res;
+        if (newItem && newItem._id) {
+          setItems((prev) => [newItem, ...prev]);
+        } else {
+          fetchItems();
+        }
         toast.success(`${title} created successfully`);
       }
       setFormData(getInitialFormData());
       setEditId(null);
-      fetchItems();
     } catch (error) {
       toast.error(error.response?.data?.message || `Failed to save ${title.toLowerCase()}`);
     }
@@ -91,11 +98,13 @@ const GenericManager = ({
 
   const handleDelete = async (id) => {
     if (window.confirm(`Are you sure you want to delete this ${title.toLowerCase()}?`)) {
+      const prevItems = items;
+      setItems((prev) => prev.filter((i) => i._id !== id));
       try {
         await deleteFn(id);
         toast.success(`${title} deleted successfully`);
-        fetchItems();
       } catch (error) {
+        setItems(prevItems);
         toast.error(`Failed to delete ${title.toLowerCase()}`);
       }
     }
@@ -108,13 +117,13 @@ const GenericManager = ({
   }`;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
       <div className="lg:col-span-2">
-        <h1 className={`text-2xl font-serif mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>{title} Catalog</h1>
-        <div className={`border rounded-lg shadow-sm overflow-hidden ${
+        <h1 className={`text-xl sm:text-2xl font-serif mb-4 sm:mb-6 ${isDark ? 'text-white' : 'text-gray-900'}`}>{title} Catalog</h1>
+        <div className={`border rounded-xl shadow-sm overflow-hidden ${
           isDark ? 'bg-dark-800 border-dark-600' : 'bg-white border-gray-200'
         }`}>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto touch-scroll">
             <table className={`min-w-full divide-y ${isDark ? 'divide-dark-600' : 'divide-gray-200'}`}>
               <thead className={isDark ? 'bg-dark-700' : 'bg-gray-50'}>
                 <tr>
@@ -153,7 +162,7 @@ const GenericManager = ({
       </div>
 
       <div>
-        <div className={`p-6 border rounded-lg shadow-sm sticky top-6 ${
+        <div className={`p-4 sm:p-6 border rounded-xl shadow-sm sticky top-6 ${
           isDark ? 'bg-dark-800 border-dark-600' : 'bg-white border-gray-200'
         }`}>
           <h2 className={`text-lg font-serif mb-4 border-b pb-2 ${

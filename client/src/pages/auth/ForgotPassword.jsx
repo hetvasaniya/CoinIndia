@@ -6,32 +6,52 @@ import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import toast from 'react-hot-toast';
 import { STATIC_IMAGES } from '../../data/staticImages';
+import { validateForgotPasswordForm, isValidEmail } from '../../utils/validation';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const { isDark } = useTheme();
 
+  const handleChange = (e) => {
+    setEmail(e.target.value);
+    if (error) setError('');
+  };
+
+  const handleBlur = () => {
+    if (email && !isValidEmail(email)) {
+      setError('Please enter a valid email address');
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const { isValid, errors } = validateForgotPasswordForm(email);
+    if (!isValid) {
+      setError(errors.email);
+      return;
+    }
+
     setLoading(true);
     try {
-      await authService.forgotPassword(email);
+      await authService.forgotPassword(email.trim());
       setSuccess(true);
       toast.success('Reset link sent to your email');
-    } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to send reset link');
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to send reset link');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className={`min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors ${
+    <div className={`min-h-screen flex items-center justify-center py-8 sm:py-12 px-3.5 sm:px-6 lg:px-8 transition-colors ${
       isDark ? 'bg-dark-900' : 'bg-[#FAF8F5]'
     }`}>
-      <div className={`max-w-md w-full p-8 border rounded-xl shadow-xl ${
+      <div className={`max-w-md w-full p-5 sm:p-8 border rounded-xl shadow-xl ${
         isDark ? 'bg-dark-800 border-dark-700' : 'bg-white border-gray-200'
       }`}>
         <div className="text-center mb-8">
@@ -58,8 +78,17 @@ const ForgotPassword = () => {
             </Link>
           </div>
         ) : (
-          <form className="space-y-6" onSubmit={handleSubmit}>
-            <Input label="Email Address" type="email" required placeholder="e.g., your.email@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+          <form className="space-y-6" onSubmit={handleSubmit} noValidate>
+            <Input 
+              label="Email Address" 
+              type="email" 
+              required 
+              placeholder="e.g., your.email@example.com" 
+              value={email} 
+              onChange={handleChange}
+              onBlur={handleBlur}
+              error={error}
+            />
             <Button type="submit" className="w-full shadow-gold" isLoading={loading}>Send Reset Link</Button>
             <div className="text-center text-sm">
               <Link to="/login" className="text-gold-500 hover:underline">Back to Login</Link>

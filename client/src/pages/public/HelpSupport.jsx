@@ -8,6 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 import settingsService from '../../services/settingsService';
 import supportService from '../../services/supportService';
 import toast from 'react-hot-toast';
+import { validateSupportForm, isValidEmail } from '../../utils/validation';
 import { 
   FiMail, FiTruck, FiFileText, FiShield, FiClock, 
   FiHelpCircle, FiSend, FiExternalLink, FiCheckCircle, FiUserCheck, FiStar
@@ -43,6 +44,7 @@ const HelpSupport = () => {
     subject: '',
     message: ''
   });
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     fetchSettings();
@@ -73,16 +75,55 @@ const HelpSupport = () => {
     }
   };
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleBlur = (field) => {
+    if (field === 'name' && formData.name) {
+      if (formData.name.trim().length < 2) {
+        setErrors((prev) => ({ ...prev, name: 'Name must be at least 2 characters' }));
+      }
+    }
+    if (field === 'email' && formData.email) {
+      if (!isValidEmail(formData.email)) {
+        setErrors((prev) => ({ ...prev, email: 'Please enter a valid email address' }));
+      }
+    }
+    if (field === 'subject' && formData.subject) {
+      if (formData.subject.trim().length < 3) {
+        setErrors((prev) => ({ ...prev, subject: 'Subject must be at least 3 characters' }));
+      }
+    }
+    if (field === 'message' && formData.message) {
+      if (formData.message.trim().length < 10) {
+        setErrors((prev) => ({ ...prev, message: 'Message must be at least 10 characters' }));
+      }
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.email || !formData.subject || !formData.message) {
-      toast.error('Please fill in all required fields');
+
+    const { isValid, errors: validationErrors } = validateSupportForm(formData);
+    if (!isValid) {
+      setErrors(validationErrors);
       return;
     }
 
     try {
       setSubmitting(true);
-      const res = await supportService.submitInquiry(formData);
+      const res = await supportService.submitInquiry({
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        orderId: formData.orderId.trim(),
+        subject: formData.subject.trim(),
+        message: formData.message.trim()
+      });
       setSubmittedSuccess(true);
       toast.success(res.message || 'Support request submitted successfully!');
       setFormData({
@@ -92,6 +133,7 @@ const HelpSupport = () => {
         subject: '',
         message: ''
       });
+      setErrors({});
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to submit support request');
     } finally {
@@ -116,29 +158,29 @@ const HelpSupport = () => {
   }`;
 
   return (
-    <div className={`min-h-screen py-12 transition-colors ${isDark ? 'bg-dark-900 text-gray-100' : 'bg-[#FAF8F5] text-gray-900'}`}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+    <div className={`min-h-screen py-8 sm:py-12 transition-colors ${isDark ? 'bg-dark-900 text-gray-100' : 'bg-[#FAF8F5] text-gray-900'}`}>
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6 sm:space-y-10">
         
         {/* Header with Help & Support Admin Button */}
-        <div className={`p-8 border rounded-2xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-6 ${cardBg}`}>
+        <div className={`p-5 sm:p-8 border rounded-2xl shadow-sm flex flex-col md:flex-row items-center justify-between gap-6 ${cardBg}`}>
           <div className="space-y-2 text-center md:text-left">
             <span className="px-3 py-1 bg-gold-500/20 text-gold-400 font-semibold text-xs rounded-full uppercase tracking-wider">
               Customer Experience & Assistance
             </span>
-            <h1 className={`text-3xl sm:text-4xl font-serif font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+            <h1 className={`text-2xl sm:text-3xl md:text-4xl font-serif font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
               Help & Support Center
             </h1>
-            <p className={`text-sm max-w-xl ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+            <p className={`text-xs sm:text-sm max-w-xl ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
               We are dedicated to supporting your numismatic collecting journey. Find answers, check shipping policies, or send an inquiry below.
             </p>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row items-center gap-3 flex-shrink-0">
+          <div className="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto flex-shrink-0">
             {/* Customer Reviews Button */}
             <Link
               to="/reviews"
-              className={`px-5 py-3 rounded-xl border font-bold text-sm transition-all flex items-center gap-2 ${
+              className={`w-full sm:w-auto px-5 py-2.5 sm:py-3 rounded-xl border font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 ${
                 isDark
                   ? 'border-gold-500/50 text-gold-400 hover:bg-gold-500/10 hover:border-gold-500'
                   : 'border-gold-500 text-gold-600 hover:bg-gold-50 hover:border-gold-600'
@@ -151,7 +193,7 @@ const HelpSupport = () => {
             <button
               onClick={handleSupportAdminClick}
               type="button"
-              className="px-5 py-3 rounded-xl bg-gradient-to-r from-gold-600 via-gold-500 to-gold-400 text-dark-950 font-bold text-sm shadow-gold hover:brightness-110 transition-all flex items-center gap-2"
+              className="w-full sm:w-auto px-5 py-2.5 sm:py-3 rounded-xl bg-gradient-to-r from-gold-600 via-gold-500 to-gold-400 text-dark-950 font-bold text-xs sm:text-sm shadow-gold hover:brightness-110 transition-all flex items-center justify-center gap-2"
             >
               <FiUserCheck className="text-lg" />
               {user?.role === 'admin' ? 'Help & Support Admin' : 'Submit Support Request'}
@@ -283,79 +325,92 @@ const HelpSupport = () => {
 
         {/* Contact Form / Support Request Section */}
         {settings.contactFormEnabled && (
-          <div id="support-request-form" className={`p-8 border rounded-2xl shadow-sm ${cardBg}`}>
+          <div id="support-request-form" className={`p-5 sm:p-8 border rounded-2xl shadow-sm ${cardBg}`}>
             <div className="mb-6 border-b pb-4 border-dark-700/50">
-              <h2 className={`text-2xl font-serif font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+              <h2 className={`text-xl sm:text-2xl font-serif font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                 {settings.contactFormHeading || 'Get in Touch with Numismatic Support'}
               </h2>
-              <p className={`text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              <p className={`text-xs sm:text-sm mt-1 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                 {settings.contactFormDescription || 'Have questions about rare coin authenticity, historical provenance, or order tracking? Send us a message below.'}
               </p>
             </div>
 
             {submittedSuccess ? (
-              <div className={`p-8 rounded-xl border text-center space-y-4 ${
+              <div className={`p-6 sm:p-8 rounded-xl border text-center space-y-4 ${
                 isDark ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-emerald-50 border-emerald-200 text-emerald-800'
               }`}>
-                <FiCheckCircle className="mx-auto text-5xl text-emerald-500" />
-                <h3 className="text-xl font-serif font-bold">Request Submitted Successfully!</h3>
-                <p className="text-sm max-w-md mx-auto">
+                <FiCheckCircle className="mx-auto text-4xl sm:text-5xl text-emerald-500" />
+                <h3 className="text-lg sm:text-xl font-serif font-bold">Request Submitted Successfully!</h3>
+                <p className="text-xs sm:text-sm max-w-md mx-auto">
                   Your support request has been submitted successfully. Our support team will review your inquiry and get back to you soon.
                 </p>
-                <Button onClick={() => setSubmittedSuccess(false)} variant="outline" className="mt-4">
+                <Button onClick={() => setSubmittedSuccess(false)} variant="outline" className="mt-4 w-full sm:w-auto">
                   Send Another Inquiry
                 </Button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <Input
                     label="Full Name"
+                    name="name"
                     required
                     placeholder="e.g., Vikramaditya Sharma"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={handleChange}
+                    onBlur={() => handleBlur('name')}
+                    error={errors.name}
                   />
 
                   <Input
                     label="Email Address"
+                    name="email"
                     type="email"
                     required
                     placeholder="e.g., vikram@example.com"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={handleChange}
+                    onBlur={() => handleBlur('email')}
+                    error={errors.email}
                   />
 
                   <Input
                     label="Order ID (Optional)"
+                    name="orderId"
                     placeholder="e.g., ORD-2026-9482 or leave blank"
                     value={formData.orderId}
-                    onChange={(e) => setFormData({ ...formData, orderId: e.target.value })}
+                    onChange={handleChange}
                   />
 
                   <Input
                     label="Subject"
+                    name="subject"
                     required
                     placeholder="e.g., Question about 1862 Queen Victoria Coin"
                     value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                    onChange={handleChange}
+                    onBlur={() => handleBlur('subject')}
+                    error={errors.subject}
                   />
 
                   <div className="md:col-span-2">
                     <label className={labelClass}>Message <span className="text-red-500 font-bold">*</span></label>
                     <textarea
                       rows="5"
+                      name="message"
                       required
-                      className={textareaClass}
+                      className={`${textareaClass} ${errors.message ? 'border-red-500' : ''}`}
                       placeholder="Please describe your question or support request in detail..."
                       value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      onChange={handleChange}
+                      onBlur={() => handleBlur('message')}
                     ></textarea>
+                    {errors.message && <p className="mt-1 text-sm text-red-500">{errors.message}</p>}
                   </div>
                 </div>
 
-                <div className="flex justify-end pt-2">
-                  <Button type="submit" isLoading={submitting} className="flex items-center gap-2 shadow-gold text-base px-8 py-3">
+                <div className="flex flex-col sm:flex-row justify-end pt-2">
+                  <Button type="submit" isLoading={submitting} className="w-full sm:w-auto flex items-center justify-center gap-2 shadow-gold text-sm sm:text-base px-8 py-3">
                     <FiSend /> Submit Request
                   </Button>
                 </div>

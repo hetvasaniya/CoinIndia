@@ -2,12 +2,18 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const protect = async (req, res, next) => {
+  if (req.user) {
+    return next();
+  }
+
   let token;
 
   if (req.cookies && req.cookies.jwt) {
     token = req.cookies.jwt;
   } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     token = req.headers.authorization.split(' ')[1];
+  } else if (req.query && req.query.token) {
+    token = req.query.token;
   }
 
   if (!token) {

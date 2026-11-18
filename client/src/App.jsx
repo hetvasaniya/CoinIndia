@@ -16,6 +16,7 @@ import Reviews from './pages/public/Reviews';
 // Auth Pages
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import VerifyOtp from './pages/auth/VerifyOtp';
 import ForgotPassword from './pages/auth/ForgotPassword';
 import ResetPassword from './pages/auth/ResetPassword';
 
@@ -32,6 +33,7 @@ import PaymentHistory from './pages/customer/PaymentHistory';
 import Dashboard from './pages/admin/Dashboard';
 import CoinManager from './pages/admin/CoinManager';
 import CoinForm from './pages/admin/CoinForm';
+import AiCoinRegistration from './pages/admin/AiCoinRegistration';
 import CategoryManager from './pages/admin/CategoryManager';
 import CountryManager from './pages/admin/CountryManager';
 import MintManager from './pages/admin/MintManager';
@@ -56,7 +58,9 @@ function App() {
         
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/verify-otp" element={<VerifyOtp />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
 
         <Route element={<ProtectedRoute />}>
@@ -75,6 +79,8 @@ function App() {
           <Route path="/admin" element={<Dashboard />} />
           <Route path="/admin/coins" element={<CoinManager />} />
           <Route path="/admin/coins/new" element={<CoinForm />} />
+          <Route path="/admin/coins/ai" element={<AiCoinRegistration />} />
+          <Route path="/admin/coins/ai/:draftId" element={<AiCoinRegistration />} />
           <Route path="/admin/coins/:id/edit" element={<CoinForm />} />
           <Route path="/admin/categories" element={<CategoryManager />} />
           <Route path="/admin/countries" element={<CountryManager />} />

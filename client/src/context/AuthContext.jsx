@@ -15,11 +15,19 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const checkUser = async () => {
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (!token) {
+      setUser(null);
+      setLoading(false);
+      return;
+    }
+
     try {
       const data = await authService.getMe();
       setUser(data);
     } catch (error) {
       setUser(null);
+      localStorage.removeItem('token');
     } finally {
       setLoading(false);
     }
@@ -44,14 +52,38 @@ export const AuthProvider = ({ children }) => {
   const register = async (userData) => {
     try {
       const data = await authService.register(userData);
+      toast.success(data?.message || 'Verification code sent to your email');
+      return data;
+    } catch (error) {
+      const msg = error.response?.data?.message || error.response?.data?.errors?.[0]?.msg || 'Registration failed';
+      toast.error(msg);
+      throw error;
+    }
+  };
+
+  const verifyOtp = async (verificationData) => {
+    try {
+      const data = await authService.verifyOtp(verificationData);
       if (data?.token) {
         localStorage.setItem('token', data.token);
       }
       setUser(data);
-      toast.success('Account registered successfully');
+      toast.success('Email verified successfully! Welcome to Coinomart.');
       return data;
     } catch (error) {
-      const msg = error.response?.data?.message || error.response?.data?.errors?.[0]?.msg || 'Registration failed';
+      const msg = error.response?.data?.message || error.response?.data?.errors?.[0]?.msg || 'OTP verification failed';
+      toast.error(msg);
+      throw error;
+    }
+  };
+
+  const resendVerification = async (email) => {
+    try {
+      const data = await authService.resendVerification(email);
+      toast.success(data?.message || 'New verification code sent');
+      return data;
+    } catch (error) {
+      const msg = error.response?.data?.message || error.response?.data?.errors?.[0]?.msg || 'Failed to resend code';
       toast.error(msg);
       throw error;
     }
@@ -69,13 +101,20 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updateUser = (updatedUserData) => {
+    setUser((prev) => (prev ? { ...prev, ...updatedUserData } : updatedUserData));
+  };
+
   const value = {
     user,
     loading,
     login,
     register,
+    verifyOtp,
+    resendVerification,
     logout,
     checkUser,
+    updateUser,
   };
 
   return (
@@ -84,4 +123,3 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   );
 };
-

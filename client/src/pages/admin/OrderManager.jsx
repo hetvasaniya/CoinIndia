@@ -60,8 +60,8 @@ const OrderManager = () => {
     fetchOrdersAndStats();
   }, [statusFilter, paymentFilter]);
 
-  const fetchOrdersAndStats = async () => {
-    setLoading(true);
+  const fetchOrdersAndStats = async (isInitial = true) => {
+    if (isInitial) setLoading(true);
     try {
       const [ordersData, statsData] = await Promise.all([
         adminService.getOrders({
@@ -79,7 +79,16 @@ const OrderManager = () => {
     } catch (error) {
       toast.error('Failed to fetch orders');
     } finally {
-      setLoading(false);
+      if (isInitial) setLoading(false);
+    }
+  };
+
+  const refreshStatsSilent = async () => {
+    try {
+      const statsData = await adminService.getOrderStats();
+      if (statsData) setStats(statsData);
+    } catch (err) {
+      // ignore
     }
   };
 
@@ -91,11 +100,14 @@ const OrderManager = () => {
     }
     try {
       const updated = await adminService.updateOrderStatus(id, { status: newStatus });
+      const updatedOrder = updated.order || updated;
       toast.success(`Order status updated to ${newStatus.toUpperCase()}`);
+      
+      setOrders((prev) => prev.map((o) => (o._id === id ? { ...o, ...updatedOrder } : o)));
       if (selectedOrder && selectedOrder._id === id) {
-        setSelectedOrder(updated.order || updated);
+        setSelectedOrder((prev) => ({ ...prev, ...updatedOrder }));
       }
-      fetchOrdersAndStats();
+      refreshStatsSilent();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to update order status');
     }
@@ -153,12 +165,14 @@ const OrderManager = () => {
         notes: cancelForm.notes,
       });
 
+      const updatedOrder = res.order || res;
       toast.success('Order cancelled. Inventory restored to stock.');
       setCancelModalOpen(false);
-      if (detailModalOpen) {
-        setSelectedOrder(res.order || res);
+      setOrders((prev) => prev.map((o) => (o._id === selectedOrder._id ? { ...o, ...updatedOrder } : o)));
+      if (selectedOrder) {
+        setSelectedOrder((prev) => ({ ...prev, ...updatedOrder }));
       }
-      fetchOrdersAndStats();
+      refreshStatsSilent();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to cancel order');
     }
@@ -182,12 +196,14 @@ const OrderManager = () => {
     if (!selectedOrder) return;
     try {
       const res = await adminService.processRefund(selectedOrder._id, refundForm);
+      const updatedOrder = res.order || res;
       toast.success('Refund updated successfully');
       setRefundModalOpen(false);
-      if (detailModalOpen) {
-        setSelectedOrder(res.order || res);
+      setOrders((prev) => prev.map((o) => (o._id === selectedOrder._id ? { ...o, ...updatedOrder } : o)));
+      if (selectedOrder) {
+        setSelectedOrder((prev) => ({ ...prev, ...updatedOrder }));
       }
-      fetchOrdersAndStats();
+      refreshStatsSilent();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to update refund');
     }
@@ -205,9 +221,10 @@ const OrderManager = () => {
         carrier: trackingForm.carrier,
         estimatedDelivery: trackingForm.estimatedDelivery || undefined,
       });
+      const updatedOrder = res.order || res;
       toast.success('Tracking information saved');
-      setSelectedOrder(res.order || res);
-      fetchOrdersAndStats();
+      setOrders((prev) => prev.map((o) => (o._id === selectedOrder._id ? { ...o, ...updatedOrder } : o)));
+      setSelectedOrder((prev) => ({ ...prev, ...updatedOrder }));
     } catch (error) {
       toast.error('Failed to update tracking');
     }
@@ -290,80 +307,80 @@ const OrderManager = () => {
 
       {/* Revenue & Order Metrics Bar */}
       {stats && (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-3">
+        <div className="grid grid-cols-2 min-[480px]:grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-2.5 sm:gap-3">
           {/* Gross Revenue */}
-          <div className={`p-3.5 border rounded-xl shadow-sm transition-colors ${cardBg}`}>
-            <p className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Gross Revenue</p>
-            <p className={`text-lg font-serif font-bold mt-0.5 ${isDark ? 'text-white' : 'text-gray-900'}`}>{formatPrice(stats.grossRevenue || 0)}</p>
+          <div className={`p-3 sm:p-3.5 border rounded-xl shadow-sm transition-colors ${cardBg}`}>
+            <p className={`text-[11px] sm:text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Gross Revenue</p>
+            <p className={`text-base sm:text-lg font-serif font-bold mt-0.5 ${isDark ? 'text-white' : 'text-gray-900'}`}>{formatPrice(stats.grossRevenue || 0)}</p>
             <span className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Total Billed</span>
           </div>
 
           {/* Cancelled Amount */}
-          <div className={`p-3.5 border rounded-xl shadow-sm transition-colors ${
+          <div className={`p-3 sm:p-3.5 border rounded-xl shadow-sm transition-colors ${
             isDark ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-red-50/80 border-red-200 text-red-700'
           }`}>
-            <p className="text-xs font-semibold">Cancelled Amount</p>
-            <p className="text-lg font-serif font-bold mt-0.5">-{formatPrice(stats.cancelledOrderAmount || 0)}</p>
+            <p className="text-[11px] sm:text-xs font-semibold">Cancelled Amount</p>
+            <p className="text-base sm:text-lg font-serif font-bold mt-0.5">-{formatPrice(stats.cancelledOrderAmount || 0)}</p>
             <span className="text-[10px] opacity-80 font-medium">Deducted</span>
           </div>
 
           {/* Refunded Amount */}
-          <div className={`p-3.5 border rounded-xl shadow-sm transition-colors ${
+          <div className={`p-3 sm:p-3.5 border rounded-xl shadow-sm transition-colors ${
             isDark ? 'bg-purple-500/10 border-purple-500/20 text-purple-400' : 'bg-purple-50/80 border-purple-200 text-purple-800'
           }`}>
-            <p className="text-xs font-semibold">Refunded Amount</p>
-            <p className="text-lg font-serif font-bold mt-0.5">{formatPrice(stats.refundedAmount || 0)}</p>
+            <p className="text-[11px] sm:text-xs font-semibold">Refunded Amount</p>
+            <p className="text-base sm:text-lg font-serif font-bold mt-0.5">{formatPrice(stats.refundedAmount || 0)}</p>
             <span className="text-[10px] opacity-80 font-medium">Processed</span>
           </div>
 
           {/* Net Revenue */}
-          <div className={`p-3.5 border rounded-xl shadow-sm transition-colors ${
+          <div className={`p-3 sm:p-3.5 border rounded-xl shadow-sm transition-colors ${
             isDark ? 'bg-gold-500/15 border-gold-500/40' : 'bg-amber-50 border-amber-300'
           }`}>
-            <p className="text-xs text-gold-500 font-bold uppercase tracking-wider">Net Revenue</p>
-            <p className={`text-lg font-serif font-bold mt-0.5 ${isDark ? 'text-gold-300' : 'text-gray-900'}`}>{formatPrice(stats.netRevenue || 0)}</p>
+            <p className="text-[11px] sm:text-xs text-gold-500 font-bold uppercase tracking-wider">Net Revenue</p>
+            <p className={`text-base sm:text-lg font-serif font-bold mt-0.5 ${isDark ? 'text-gold-300' : 'text-gray-900'}`}>{formatPrice(stats.netRevenue || 0)}</p>
             <span className="text-[10px] text-emerald-500 font-semibold">Active Net</span>
           </div>
 
           {/* Total Orders */}
-          <div className={`p-3.5 border rounded-xl shadow-sm transition-colors ${cardBg}`}>
-            <p className={`text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Total Orders</p>
-            <p className={`text-lg font-serif font-bold mt-0.5 ${isDark ? 'text-white' : 'text-gray-900'}`}>{stats.totalOrders || 0}</p>
+          <div className={`p-3 sm:p-3.5 border rounded-xl shadow-sm transition-colors ${cardBg}`}>
+            <p className={`text-[11px] sm:text-xs font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Total Orders</p>
+            <p className={`text-base sm:text-lg font-serif font-bold mt-0.5 ${isDark ? 'text-white' : 'text-gray-900'}`}>{stats.totalOrders || 0}</p>
             <span className={`text-[10px] ${isDark ? 'text-gray-500' : 'text-gray-400'}`}>Lifetime</span>
           </div>
 
           {/* Pending / Queue */}
-          <div className={`p-3.5 border rounded-xl shadow-sm transition-colors ${
+          <div className={`p-3 sm:p-3.5 border rounded-xl shadow-sm transition-colors ${
             isDark ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' : 'bg-amber-50/60 border-amber-200 text-amber-800'
           }`}>
-            <p className="text-xs font-semibold">Pending / Queue</p>
-            <p className="text-lg font-serif font-bold mt-0.5">{stats.pendingOrders || 0}</p>
+            <p className="text-[11px] sm:text-xs font-semibold">Pending / Queue</p>
+            <p className="text-base sm:text-lg font-serif font-bold mt-0.5">{stats.pendingOrders || 0}</p>
             <span className="text-[10px] opacity-80 font-medium">Needs Action</span>
           </div>
 
           {/* Delivered */}
-          <div className={`p-3.5 border rounded-xl shadow-sm transition-colors ${
+          <div className={`p-3 sm:p-3.5 border rounded-xl shadow-sm transition-colors ${
             isDark ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400' : 'bg-emerald-50/60 border-emerald-200 text-emerald-800'
           }`}>
-            <p className="text-xs font-semibold">Delivered</p>
-            <p className="text-lg font-serif font-bold mt-0.5">{stats.completedOrders || 0}</p>
+            <p className="text-[11px] sm:text-xs font-semibold">Delivered</p>
+            <p className="text-base sm:text-lg font-serif font-bold mt-0.5">{stats.completedOrders || 0}</p>
             <span className="text-[10px] opacity-80 font-medium">Fulfilled</span>
           </div>
 
           {/* Cancelled */}
-          <div className={`p-3.5 border rounded-xl shadow-sm transition-colors ${
+          <div className={`p-3 sm:p-3.5 border rounded-xl shadow-sm transition-colors ${
             isDark ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-red-50/60 border-red-200 text-red-700'
           }`}>
-            <p className="text-xs font-semibold">Cancelled</p>
-            <p className="text-lg font-serif font-bold mt-0.5">{stats.cancelledOrders || 0}</p>
+            <p className="text-[11px] sm:text-xs font-semibold">Cancelled</p>
+            <p className="text-base sm:text-lg font-serif font-bold mt-0.5">{stats.cancelledOrders || 0}</p>
             <span className="text-[10px] opacity-80 font-medium">Restocked</span>
           </div>
         </div>
       )}
 
       {/* Filter Tabs & Search Bar */}
-      <div className={`p-4 border rounded-xl shadow-sm space-y-4 transition-colors ${cardBg}`}>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className={`p-3.5 sm:p-4 border rounded-xl shadow-sm space-y-3 sm:space-y-4 transition-colors ${cardBg}`}>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
           {/* Status filter tabs */}
           <div className="flex flex-wrap gap-1.5">
             {[
@@ -378,7 +395,7 @@ const OrderManager = () => {
               <button
                 key={tab.key}
                 onClick={() => setStatusFilter(tab.key)}
-                className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+                className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs font-medium transition-all ${
                   statusFilter === tab.key
                     ? 'bg-gold-500 text-dark-950 font-bold shadow-sm'
                     : isDark 
@@ -392,8 +409,8 @@ const OrderManager = () => {
           </div>
 
           {/* Search and Payment Filter */}
-          <div className="flex items-center gap-3">
-            <div className="relative w-64">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 sm:gap-3 w-full md:w-auto">
+            <div className="relative w-full sm:w-64">
               <FiSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <input
                 type="text"
@@ -408,7 +425,7 @@ const OrderManager = () => {
             <select
               value={paymentFilter}
               onChange={(e) => setPaymentFilter(e.target.value)}
-              className={`px-2.5 py-1.5 border rounded-lg text-xs focus:ring-1 focus:ring-gold-500 transition-colors ${
+              className={`w-full sm:w-auto px-2.5 py-1.5 border rounded-lg text-xs focus:ring-1 focus:ring-gold-500 transition-colors ${
                 isDark ? 'bg-dark-700 border-dark-600 text-white' : 'bg-white border-gray-300 text-gray-900'
               }`}
             >
@@ -424,7 +441,7 @@ const OrderManager = () => {
       {/* Main Content: Orders Table vs Packing View */}
       {activeTab === 'orders' ? (
         <div className={`border rounded-xl shadow-sm overflow-hidden transition-colors ${cardBg}`}>
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto touch-scroll">
             <table className={`min-w-full divide-y ${isDark ? 'divide-dark-700' : 'divide-gray-200'}`}>
               <thead className={headerBg}>
                 <tr>
@@ -708,13 +725,13 @@ const OrderManager = () => {
       {/* 1. COMPREHENSIVE ORDER DETAILS MODAL / DRAWER */}
       {/* ========================================================================= */}
       {detailModalOpen && selectedOrder && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className={`rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto border transition-colors ${isDark ? 'bg-dark-800 border-dark-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}>
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-2.5 sm:p-4">
+          <div className={`rounded-xl shadow-2xl max-w-4xl w-full max-h-[92vh] overflow-y-auto touch-scroll border transition-colors ${isDark ? 'bg-dark-800 border-dark-700 text-white' : 'bg-white border-gray-200 text-gray-900'}`}>
             {/* Modal Header */}
-            <div className={`sticky top-0 border-b px-6 py-4 flex items-center justify-between z-10 ${isDark ? 'bg-dark-750 border-dark-700' : 'bg-[#FAFAF7] border-gray-200'}`}>
+            <div className={`sticky top-0 border-b px-4 sm:px-6 py-3.5 sm:py-4 flex items-center justify-between z-10 ${isDark ? 'bg-dark-750 border-dark-700' : 'bg-[#FAFAF7] border-gray-200'}`}>
               <div>
-                <div className="flex items-center gap-3">
-                  <h2 className={`text-xl font-serif ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                  <h2 className={`text-lg sm:text-xl font-serif ${isDark ? 'text-white' : 'text-gray-900'}`}>
                     Order {selectedOrder.orderNumber || `#${selectedOrder._id.slice(-8).toUpperCase()}`}
                   </h2>
                   <span className={`px-2.5 py-0.5 text-xs font-bold rounded-full uppercase ${getStatusColor(selectedOrder.status)}`}>
@@ -736,7 +753,7 @@ const OrderManager = () => {
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
               {/* STATUS WORKFLOW STEPPER */}
               <div className={`p-5 border rounded-xl ${isDark ? 'bg-dark-750 border-dark-700' : 'bg-white border-gray-200'}`}>
                 <h3 className={`text-xs font-semibold uppercase tracking-wider mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
@@ -1137,8 +1154,8 @@ const OrderManager = () => {
       {/* 2. CANCEL ORDER CONFIRMATION MODAL */}
       {/* ========================================================================= */}
       {cancelModalOpen && selectedOrder && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className={`rounded-xl shadow-2xl max-w-lg w-full border p-6 space-y-4 transition-colors ${isDark ? 'bg-dark-800 border-red-900/40 text-white' : 'bg-white border-red-200 text-gray-900'}`}>
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-2.5 sm:p-4">
+          <div className={`rounded-xl shadow-2xl max-w-lg w-full max-h-[92vh] overflow-y-auto touch-scroll border p-4 sm:p-6 space-y-4 transition-colors ${isDark ? 'bg-dark-800 border-red-900/40 text-white' : 'bg-white border-red-200 text-gray-900'}`}>
             <div className={`flex items-center gap-3 border-b pb-3 ${isDark ? 'border-dark-700 text-red-400' : 'border-gray-200 text-red-600'}`}>
               <FiXCircle className="w-6 h-6 flex-shrink-0" />
               <div>
@@ -1243,8 +1260,8 @@ const OrderManager = () => {
       {/* 3. REFUND MANAGEMENT MODAL */}
       {/* ========================================================================= */}
       {refundModalOpen && selectedOrder && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className={`rounded-xl shadow-2xl max-w-md w-full border p-6 space-y-4 transition-colors ${isDark ? 'bg-dark-800 border-purple-900/40 text-white' : 'bg-white border-purple-200 text-gray-900'}`}>
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-2.5 sm:p-4">
+          <div className={`rounded-xl shadow-2xl max-w-md w-full max-h-[92vh] overflow-y-auto touch-scroll border p-4 sm:p-6 space-y-4 transition-colors ${isDark ? 'bg-dark-800 border-purple-900/40 text-white' : 'bg-white border-purple-200 text-gray-900'}`}>
             <div className={`flex items-center gap-3 border-b pb-3 ${isDark ? 'border-dark-700 text-purple-400' : 'border-gray-200 text-purple-700'}`}>
               <FiDollarSign className="w-6 h-6 flex-shrink-0" />
               <div>
@@ -1354,13 +1371,13 @@ const OrderManager = () => {
       {/* 4. DEDICATED PACKING VIEW & PRINT SLIP MODAL */}
       {/* ========================================================================= */}
       {packingModalOpen && selectedOrder && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className={`rounded-xl shadow-2xl max-w-2xl w-full border overflow-hidden transition-colors ${isDark ? 'bg-dark-800 border-dark-700' : 'bg-white border-gray-200'}`}>
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/60 backdrop-blur-xs flex items-center justify-center p-2.5 sm:p-4">
+          <div className={`rounded-xl shadow-2xl max-w-2xl w-full max-h-[92vh] overflow-y-auto touch-scroll border overflow-hidden transition-colors ${isDark ? 'bg-dark-800 border-dark-700' : 'bg-white border-gray-200'}`}>
             {/* Action Bar (Not Printed) */}
-            <div className={`px-6 py-3 border-b flex items-center justify-between print:hidden ${isDark ? 'bg-dark-750 border-dark-700' : 'bg-[#FAFAF7] border-gray-200'}`}>
+            <div className={`px-4 sm:px-6 py-3 border-b flex items-center justify-between print:hidden ${isDark ? 'bg-dark-750 border-dark-700' : 'bg-[#FAFAF7] border-gray-200'}`}>
               <div className="flex items-center gap-2">
                 <FiPackage className="w-5 h-5 text-[#B8860B]" />
-                <h3 className={`font-serif font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Packing View & Dispatch Slip</h3>
+                <h3 className={`font-serif text-sm sm:text-base font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Packing View & Dispatch Slip</h3>
               </div>
               <div className="flex items-center gap-2">
                 <button
@@ -1382,7 +1399,7 @@ const OrderManager = () => {
             </div>
 
             {/* Printable Packing Sheet (Pure White Background & Black Text for crystal clear print & display) */}
-            <div className="p-8 space-y-6 !text-gray-900 bg-white" id="packing-slip" style={{ color: '#111827', backgroundColor: '#ffffff' }}>
+            <div className="p-4 sm:p-8 space-y-4 sm:space-y-6 !text-gray-900 bg-white" id="packing-slip" style={{ color: '#111827', backgroundColor: '#ffffff' }}>
               {/* Slip Header */}
               <div className="flex justify-between items-start border-b-2 border-gray-900 pb-4">
                 <div className="flex items-center gap-3">

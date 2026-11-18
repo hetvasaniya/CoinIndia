@@ -45,6 +45,29 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    verificationOtpHash: {
+      type: String,
+    },
+    verificationOtpExpiresAt: {
+      type: Date,
+    },
+    verificationOtpAttempts: {
+      type: Number,
+      default: 0,
+    },
+    verificationOtpLastSentAt: {
+      type: Date,
+    },
+    passwordResetTokenHash: {
+      type: String,
+    },
+    passwordResetExpiresAt: {
+      type: Date,
+    },
     resetPasswordToken: String,
     resetPasswordExpire: Date,
   },
@@ -65,15 +88,32 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-userSchema.methods.getResetPasswordToken = function () {
-  const resetToken = crypto.randomBytes(20).toString('hex');
+userSchema.methods.generateVerificationOtp = function () {
+  const otp = crypto.randomInt(100000, 1000000).toString();
+  this.verificationOtpHash = crypto
+    .createHash('sha256')
+    .update(otp)
+    .digest('hex');
+  this.verificationOtpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+  this.verificationOtpAttempts = 0;
+  this.verificationOtpLastSentAt = new Date();
+  return otp;
+};
 
-  this.resetPasswordToken = crypto
+userSchema.methods.getResetPasswordToken = function () {
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  const hashedToken = crypto
     .createHash('sha256')
     .update(resetToken)
     .digest('hex');
 
-  this.resetPasswordExpire = Date.now() + 10 * 60 * 1000;
+  this.passwordResetTokenHash = hashedToken;
+  this.resetPasswordToken = hashedToken; // for backwards compatibility
+
+  const expireTime = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+  this.passwordResetExpiresAt = expireTime;
+  this.resetPasswordExpire = expireTime;
 
   return resetToken;
 };

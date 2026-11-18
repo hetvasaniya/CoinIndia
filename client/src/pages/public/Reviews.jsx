@@ -10,6 +10,7 @@ import reviewService from '../../services/reviewService';
 import Button from '../../components/common/Button';
 import Input from '../../components/common/Input';
 import Loader from '../../components/common/Loader';
+import { validateReviewForm, isValidEmail } from '../../utils/validation';
 
 // Dynamic Star Icon Component with support for partial/full gold fills
 const StarIcon = ({ filled = false, percentage = 100, size = "w-5 h-5", className = "" }) => {
@@ -175,6 +176,7 @@ const Reviews = () => {
     location: '',
     coinPurchased: ''
   });
+  const [errors, setErrors] = useState({});
 
   useEffect(() => {
     fetchReviews();
@@ -228,28 +230,57 @@ const Reviews = () => {
     }
   };
 
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleBlur = (field) => {
+    if (field === 'name' && formData.name) {
+      if (formData.name.trim().length < 2) {
+        setErrors((prev) => ({ ...prev, name: 'Name must be at least 2 characters' }));
+      }
+    }
+    if (field === 'email' && formData.email && formData.email.trim()) {
+      if (!isValidEmail(formData.email)) {
+        setErrors((prev) => ({ ...prev, email: 'Please enter a valid email address' }));
+      }
+    }
+    if (field === 'title' && formData.title) {
+      if (formData.title.trim().length < 3) {
+        setErrors((prev) => ({ ...prev, title: 'Headline must be at least 3 characters' }));
+      }
+    }
+    if (field === 'comment' && formData.comment) {
+      if (formData.comment.trim().length < 10) {
+        setErrors((prev) => ({ ...prev, comment: 'Comment must be at least 10 characters' }));
+      }
+    }
+  };
+
   const handleSubmitReview = async (e) => {
     e.preventDefault();
-    if (!formData.name.trim()) {
-      toast.error('Please enter your name');
-      return;
-    }
-    if (!formData.rating || formData.rating < 1 || formData.rating > 5) {
-      toast.error('Please choose a rating between 1 and 5 stars');
-      return;
-    }
-    if (!formData.title.trim()) {
-      toast.error('Please enter a review headline');
-      return;
-    }
-    if (!formData.comment.trim()) {
-      toast.error('Please share details about your experience');
+
+    const { isValid, errors: validationErrors } = validateReviewForm(formData);
+    if (!isValid) {
+      setErrors(validationErrors);
       return;
     }
 
     try {
       setSubmitting(true);
-      const res = await reviewService.createReview(formData);
+      const res = await reviewService.createReview({
+        name: formData.name.trim(),
+        email: formData.email ? formData.email.trim() : undefined,
+        rating: Number(formData.rating),
+        title: formData.title.trim(),
+        comment: formData.comment.trim(),
+        location: formData.location ? formData.location.trim() : undefined,
+        coinPurchased: formData.coinPurchased ? formData.coinPurchased.trim() : undefined
+      });
       toast.success(res.message || 'Your review has been published successfully!');
       
       // Reset form and close modal
@@ -263,6 +294,7 @@ const Reviews = () => {
         location: '',
         coinPurchased: ''
       });
+      setErrors({});
 
       // Refresh reviews list
       fetchReviews();
@@ -612,15 +644,15 @@ const Reviews = () => {
 
         {/* WRITE A REVIEW MODAL */}
         {isModalOpen && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
-            <div className={`w-full max-w-xl rounded-2xl border shadow-2xl overflow-hidden transition-all ${
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-sm animate-fadeIn">
+            <div className={`w-full max-w-xl max-h-[92vh] flex flex-col rounded-2xl border shadow-2xl overflow-hidden transition-all ${
               isDark ? 'bg-dark-800 border-dark-600 text-white' : 'bg-white border-gray-200 text-gray-900'
             }`}>
               
               {/* Modal Header */}
-              <div className="p-6 border-b border-gray-200 dark:border-dark-700 flex justify-between items-center">
+              <div className="p-4 sm:p-6 border-b border-gray-200 dark:border-dark-700 flex justify-between items-center flex-shrink-0">
                 <div>
-                  <h3 className="text-xl font-serif font-bold">Write a Customer Review</h3>
+                  <h3 className="text-lg sm:text-xl font-serif font-bold">Write a Customer Review</h3>
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
                     Share your numismatic artifact acquisition experience
                   </p>
@@ -634,7 +666,7 @@ const Reviews = () => {
               </div>
 
               {/* Modal Body */}
-              <form onSubmit={handleSubmitReview} className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+              <form onSubmit={handleSubmitReview} className="p-4 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto touch-scroll flex-1" noValidate>
                 
                 {/* Interactive Star Rating Selector */}
                 <div>
@@ -643,52 +675,67 @@ const Reviews = () => {
                   </label>
                   <StarRatingInput
                     value={formData.rating}
-                    onChange={(r) => setFormData({ ...formData, rating: r })}
+                    onChange={(r) => {
+                      setFormData({ ...formData, rating: r });
+                      if (errors.rating) setErrors((prev) => ({ ...prev, rating: '' }));
+                    }}
                     hoverValue={starHover}
                     setHoverValue={setStarHover}
                   />
+                  {errors.rating && <p className="mt-1 text-xs text-red-500">{errors.rating}</p>}
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input
                     label="Your Name *"
+                    name="name"
                     placeholder="e.g. Vikramaditya Sharma"
                     required
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={handleChange}
+                    onBlur={() => handleBlur('name')}
+                    error={errors.name}
                   />
 
                   <Input
                     label="Location / City"
+                    name="location"
                     placeholder="e.g. Mumbai, Maharashtra"
                     value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                    onChange={handleChange}
                   />
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Input
                     label="Coin / Artifact Purchased"
+                    name="coinPurchased"
                     placeholder="e.g. King Edward VII 1907 Rupee"
                     value={formData.coinPurchased}
-                    onChange={(e) => setFormData({ ...formData, coinPurchased: e.target.value })}
+                    onChange={handleChange}
                   />
 
                   <Input
                     label="Email Address (Optional)"
+                    name="email"
                     type="email"
                     placeholder="For authenticity certificate tie-in"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={handleChange}
+                    onBlur={() => handleBlur('email')}
+                    error={errors.email}
                   />
                 </div>
 
                 <Input
                   label="Review Headline *"
+                  name="title"
                   placeholder="e.g. Exceptional grading & museum-grade packaging"
                   required
                   value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  onChange={handleChange}
+                  onBlur={() => handleBlur('title')}
+                  error={errors.title}
                 />
 
                 <div>
@@ -697,29 +744,33 @@ const Reviews = () => {
                   </label>
                   <textarea
                     rows="4"
+                    name="comment"
                     required
                     placeholder="Describe the condition, authenticity, shipping, and your overall numismatic experience..."
                     className={`w-full px-3.5 py-2.5 border rounded-lg text-sm transition-all focus:outline-none focus:ring-2 focus:ring-gold-500/30 focus:border-gold-500 ${
-                      isDark ? 'bg-dark-700 border-dark-600 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                      errors.comment ? 'border-red-500' : isDark ? 'bg-dark-700 border-dark-600 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
                     }`}
                     value={formData.comment}
-                    onChange={(e) => setFormData({ ...formData, comment: e.target.value })}
+                    onChange={handleChange}
+                    onBlur={() => handleBlur('comment')}
                   ></textarea>
+                  {errors.comment && <p className="mt-1 text-xs text-red-500">{errors.comment}</p>}
                 </div>
 
                 {/* Submit Actions */}
-                <div className="flex items-center justify-end space-x-3 pt-3 border-t border-gray-200 dark:border-dark-700">
+                <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-3 border-t border-gray-200 dark:border-dark-700">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => setIsModalOpen(false)}
+                    className="w-full sm:w-auto"
                   >
                     Cancel
                   </Button>
                   <Button
                     type="submit"
                     isLoading={submitting}
-                    className="shadow-gold px-6"
+                    className="w-full sm:w-auto shadow-gold px-6"
                   >
                     Publish Review
                   </Button>

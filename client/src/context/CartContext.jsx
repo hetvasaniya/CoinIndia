@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useState, useEffect, useContext, useMemo, useCallback } from 'react';
 import cartService from '../services/cartService';
 import { useAuth } from './AuthContext';
 import toast from 'react-hot-toast';
@@ -12,25 +12,25 @@ export const CartProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  useEffect(() => {
-    if (user) {
-      fetchCart();
-    } else {
-      setCartItems([]);
-    }
-  }, [user]);
-
-  const fetchCart = async () => {
+  const fetchCart = useCallback(async (isInitial = false) => {
     try {
-      setLoading(true);
+      if (isInitial) setLoading(true);
       const data = await cartService.getCart();
       setCartItems(data.items || []);
     } catch (error) {
       console.error('Failed to fetch cart', error);
     } finally {
-      setLoading(false);
+      if (isInitial) setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchCart(true);
+    } else {
+      setCartItems([]);
+    }
+  }, [user, fetchCart]);
 
   const addToCart = async (coinId, quantity = 1) => {
     if (!user) {
@@ -38,50 +38,85 @@ export const CartProvider = ({ children }) => {
       return;
     }
     try {
-      await cartService.addToCart(coinId, quantity);
+      const data = await cartService.addToCart(coinId, quantity);
+      if (data?.items) {
+        setCartItems(data.items);
+      }
       toast.success('Added to cart');
-      fetchCart();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to add to cart');
     }
   };
 
   const updateQuantity = async (coinId, quantity) => {
+    const previousItems = cartItems;
+    // Optimistic update
+    setCartItems((prev) =>
+      prev.map((item) => {
+        const id = item.coin?._id || item.coin;
+        return id === coinId ? { ...item, quantity } : item;
+      })
+    );
+
     try {
-      await cartService.updateCartItem(coinId, quantity);
-      fetchCart();
+      const data = await cartService.updateCartItem(coinId, quantity);
+      if (data?.items) {
+        setCartItems(data.items);
+      }
     } catch (error) {
-      toast.error('Failed to update quantity');
+      // Rollback on failure
+      setCartItems(previousItems);
+      toast.error(error.response?.data?.message || 'Failed to update quantity');
     }
   };
 
   const removeFromCart = async (coinId) => {
+    const previousItems = cartItems;
+    // Optimistic remove
+    setCartItems((prev) =>
+      prev.filter((item) => {
+        const id = item.coin?._id || item.coin;
+        return id !== coinId;
+      })
+    );
+
     try {
-      await cartService.removeFromCart(coinId);
+      const data = await cartService.removeFromCart(coinId);
+      if (data?.items) {
+        setCartItems(data.items);
+      }
       toast.success('Removed from cart');
-      fetchCart();
     } catch (error) {
-      toast.error('Failed to remove item');
+      // Rollback on failure
+      setCartItems(previousItems);
+      toast.error(error.response?.data?.message || 'Failed to remove item');
     }
   };
 
   const clearCart = async () => {
+    const previousItems = cartItems;
+    setCartItems([]);
     try {
       await cartService.clearCart();
-      setCartItems([]);
     } catch (error) {
+      setCartItems(previousItems);
       toast.error('Failed to clear cart');
     }
   };
 
-  const isInCart = (coinId) => {
-    return cartItems.some((item) => {
-      const id = item.coin?._id || item.coin;
-      return id === coinId;
-    });
-  };
+  const isInCart = useCallback(
+    (coinId) => {
+      return cartItems.some((item) => {
+        const id = item.coin?._id || item.coin;
+        return id === coinId;
+      });
+    },
+    [cartItems]
+  );
 
-  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  const cartCount = useMemo(() => {
+    return cartItems.reduce((acc, item) => acc + (item.quantity || 1), 0);
+  }, [cartItems]);
 
   const value = {
     cartItems,

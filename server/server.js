@@ -28,26 +28,27 @@ app.use(cookieParser());
 // CORS Configuration
 // ================================
 
-// Only these two origins are allowed
+// Allowed frontend origins (development and production)
 const allowedOrigins = [
   'http://localhost:5173',
-  process.env.FRONTEND_URL,
+  'http://localhost:3000',
+  process.env.FRONTEND_URL ? process.env.FRONTEND_URL.replace(/\/$/, '') : null,
 ].filter(Boolean);
 
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests without Origin header
-      // (Postman, server-to-server requests, etc.)
+      // Allow requests without Origin header (Postman, server-to-server, mobile, etc.)
       if (!origin) {
         return callback(null, true);
       }
 
-      if (allowedOrigins.includes(origin)) {
+      const normalizedOrigin = origin.replace(/\/$/, '');
+      if (allowedOrigins.includes(normalizedOrigin) || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
 
-      // Block every other origin
+      // Block unauthorized origins
       return callback(
         new Error(`CORS policy: Origin ${origin} is not allowed`)
       );
@@ -72,6 +73,7 @@ const wishlistRoutes = require('./routes/wishlistRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const aiCoinRoutes = require('./routes/aiCoinRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const supportRoutes = require('./routes/supportRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
@@ -93,6 +95,7 @@ app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin/ai-coins', aiCoinRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/support', supportRoutes);
 app.use('/api/reviews', reviewRoutes);

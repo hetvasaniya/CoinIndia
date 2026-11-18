@@ -47,8 +47,12 @@ const {
   getRefundableOrders,
   getRefundStats
 } = require('../controllers/orderController');
+const aiCoinRoutes = require('./aiCoinRoutes');
 
 router.use(protect, admin);
+
+// AI-Powered Coin Analysis & Registration Routes
+router.use('/ai-coins', aiCoinRoutes);
 
 router.get('/dashboard', getDashboardStats);
 router.get('/users', getUsers);

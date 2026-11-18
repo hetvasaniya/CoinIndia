@@ -1,9 +1,11 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
+const crypto = require('crypto');
 
 const coinSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
+    sku: { type: String, trim: true },
     slug: { type: String, unique: true },
     country: { type: mongoose.Schema.Types.ObjectId, ref: 'Country', required: true },
     currency: { type: String },
@@ -41,15 +43,44 @@ const coinSchema = new mongoose.Schema(
 
 coinSchema.index({ name: 'text', historicalSignificance: 'text' });
 
-coinSchema.pre('save', function (next) {
-  if (this.isModified('name') || this.isModified('yearOfIssue')) {
-    const slugString = `${this.name} ${this.yearOfIssue || ''}`;
-    this.slug = slugify(slugString, { lower: true, strict: true });
+coinSchema.pre('save', async function (next) {
+  if (this.isModified('name') || this.isModified('yearOfIssue') || !this.slug) {
+    const rawString = `${this.name || ''} ${this.yearOfIssue !== undefined && this.yearOfIssue !== null ? this.yearOfIssue : ''}`.trim();
+    let baseSlug = slugify(rawString, { lower: true, strict: true }) || 'coin';
+
+    const CoinModel = this.constructor;
+    let candidateSlug = baseSlug;
+    let counter = 1;
+
+    // Guarantee slug uniqueness across all existing coin artifacts
+    while (true) {
+      const existing = await CoinModel.findOne({
+        slug: candidateSlug,
+        _id: { $ne: this._id },
+      }).select('_id');
+
+      if (!existing) {
+        this.slug = candidateSlug;
+        break;
+      }
+
+      counter++;
+      if (counter <= 100) {
+        candidateSlug = `${baseSlug}-${counter}`;
+      } else {
+        const randomSuffix = crypto.randomBytes(2).toString('hex');
+        candidateSlug = `${baseSlug}-${randomSuffix}`;
+      }
+    }
   }
+
   if (this.isModified('quantity')) {
     this.isAvailable = this.quantity > 0;
   }
-  next();
+
+  if (typeof next === 'function') {
+    next();
+  }
 });
 
 const Coin = mongoose.model('Coin', coinSchema);
